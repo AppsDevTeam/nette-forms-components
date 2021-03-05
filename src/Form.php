@@ -28,7 +28,7 @@ class Form extends \Nette\Application\UI\Form
 	public function __construct(Nette\ComponentModel\IContainer $parent = null, string $name = null)
 	{
 		parent::__construct($parent, $name);
-		
+
 		$this->onRender[] = [self::class, self::$renderer];
 	}
 
@@ -44,7 +44,7 @@ class Form extends \Nette\Application\UI\Form
 		parent::addError($message, false);
 	}
 
-	public static function bootstrap4(Form $form): void
+	public static function bootstrap4(Nette\Forms\Form $form): void
 	{
 		$renderer = $form->getRenderer();
 		$renderer->wrappers['error']['container'] = 'div';
@@ -99,7 +99,7 @@ class Form extends \Nette\Application\UI\Form
 		}
 	}
 
-	public static function bootstrap5(Form $form): void
+	public static function bootstrap5(Nette\Forms\Form $form): void
 	{
 		static::bootstrap4($form);
 
