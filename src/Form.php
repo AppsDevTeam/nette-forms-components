@@ -29,6 +29,8 @@ class Form extends \Nette\Application\UI\Form
 	{
 		parent::__construct($parent, $name);
 
+		$this->setRenderer(new FormRenderer($this));
+
 		$this->onRender[] = [self::class, self::$renderer];
 	}
 
