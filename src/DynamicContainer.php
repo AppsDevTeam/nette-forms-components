@@ -1,6 +1,6 @@
 <?php
 
-namespace ADT\Forms\Controls;
+namespace ADT\Forms;
 
 use ADT\DoctrineForms\StaticContainer;
 use Nette;

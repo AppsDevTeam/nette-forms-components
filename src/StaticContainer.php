@@ -1,6 +1,6 @@
 <?php
 
-namespace ADT\Forms\Controls;
+namespace ADT\Forms;
 
 use Closure;
 use Nette\Application\UI\Presenter;

@@ -1,11 +1,11 @@
 <?php
 
-namespace ADT\Forms\Controls;
+namespace ADT\Forms;
 
 use Closure;
-use Nette;
+use Nette\Forms\Container;
 
-abstract class BaseContainer extends Nette\Forms\Container
+abstract class BaseContainer extends Container implements ContainerInterface
 {
 	// because there is no "addError" method in Container class
 	// we have to create an IControl instance and call "addError" on it
@@ -73,15 +73,15 @@ abstract class BaseContainer extends Nette\Forms\Container
 
 	public static function register(): void
 	{
-		Nette\Forms\Container::extensionMethod('addStaticContainer', function (Nette\Forms\Container $_this, string $name, Closure $Factory, ?string $isFilledComponentName = null, ?string $isRequiredMessage = null) {
-			return $_this[$name] = (new StaticContainerFactory($name, $containerFactory, $entityFactory, $isFilledComponentName))
+		Container::extensionMethod('addStaticContainer', function (Container $_this, string $name, Closure $Factory, ?string $isFilledComponentName = null, ?string $isRequiredMessage = null) {
+			return $_this[$name] = (new StaticContainerFactory($name, $factory, $isFilledComponentName))
 				->create()
 				->setRequired($isRequiredMessage);
 		});
 
-		Nette\Forms\Container::extensionMethod('addDynamicContainer', function (Nette\Forms\Container $_this, string $name, Closure $factory, ?string $isFilledComponentName = null, ?string $isRequiredMessage = null) {
+		Container::extensionMethod('addDynamicContainer', function (Container $_this, string $name, Closure $factory, ?string $isFilledComponentName = null, ?string $isRequiredMessage = null) {
 			return $_this[$name] = (new DynamicContainer)
-				->setStaticContainerFactory(new StaticContainerFactory($name, $containerFactory, $entityFactory, $isFilledComponentName))
+				->setStaticContainerFactory(new StaticContainerFactory($name, $factory, $isFilledComponentName))
 				->setRequired($isRequiredMessage);
 		});
 	}

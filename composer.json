@@ -1,5 +1,5 @@
 {
-	"name": "adt/nette-forms-containers",
+	"name": "adt/nette-forms-components",
 	"type": "library",
 	"license": ["MIT"],
 	"require": {
@@ -9,7 +9,7 @@
 	},
 	"autoload": {
 		"psr-4": {
-			"ADT\\Forms\\Controls\\": "src/"
+			"ADT\\Forms\\": "src/"
 		}
 	}
 }

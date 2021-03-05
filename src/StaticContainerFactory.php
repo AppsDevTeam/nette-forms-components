@@ -1,6 +1,6 @@
 <?php
 
-namespace ADT\Forms\Controls;
+namespace ADT\Forms;
 
 use Closure;
 
@@ -8,21 +8,19 @@ class StaticContainerFactory
 {
 	private string $name;
 	private Closure $containerFactory;
-	private ?Closure $entityFactory;
 	private ?string $isFilledComponentName;
 
 
-	public function __construct(string $name, Closure $containerFactory, ?Closure $entityFactory = null, ?string $isFilledComponentName = null)
+	public function __construct(string $name, Closure $containerFactory, ?string $isFilledComponentName = null)
 	{
 		$this->name = $name;
 		$this->containerFactory = $containerFactory;
-		$this->entityFactory = $entityFactory;
 		$this->isFilledComponentName = $isFilledComponentName;
 	}
 
 
-	public function create(): ToOneContainer
+	public function create(): StaticContainer
 	{
-		return new ToOneContainer($this->name, $this->containerFactory, $this->entityFactory, $this->isFilledComponentName);
+		return new StaticContainer($this->name, $this->containerFactory, $this->isFilledComponentName);
 	}
 }
