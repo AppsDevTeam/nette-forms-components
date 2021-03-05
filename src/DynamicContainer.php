@@ -2,7 +2,6 @@
 
 namespace ADT\Forms;
 
-use ADT\DoctrineForms\StaticContainer;
 use Nette;
 use Nette\Application\UI;
 use Nette\Application\UI\Presenter;
@@ -16,7 +15,7 @@ class DynamicContainer extends BaseContainer
 	private ?Closure $formMapper = null;
 	private ?Closure $entityMapper = null;
 	private bool $allowAdding = true;
-	private ?ToOneContainer $template = null;
+	private ?StaticContainer $template = null;
 
 
 	public function __construct()
@@ -55,7 +54,7 @@ class DynamicContainer extends BaseContainer
 	 */
 	protected function createComponent($name): ?Nette\ComponentModel\IComponent
 	{
-		return $this[$name] = $this->toOneContainerFactory->create();
+		return $this[$name] = $this->staticContainerFactory->create();
 	}
 
 
@@ -111,17 +110,20 @@ class DynamicContainer extends BaseContainer
 	}
 
 
-	private function getHttpData(): array
+	private function getHttpData(): ?array
 	{
 		$path = explode(self::NAME_SEPARATOR, $this->lookupPath('Nette\Application\UI\Form'));
 		$allData = $this->getForm()->getHttpData();
 		return Nette\Utils\Arrays::get($allData, $path, NULL);
 	}
-	
 
-	public function getContainers(): \CallbackFilterIterator
+
+	/**
+	 * @return StaticContainer[]
+	 */
+	public function getContainers()
 	{
-		return new \CallbackFilterIterator($this->getComponents(false, ToOneContainer::class), function ($item) {
+		return new \CallbackFilterIterator($this->getComponents(false, StaticContainer::class), function ($item) {
 			return !$item->isTemplate();
 		});
 	}

@@ -2,10 +2,21 @@
 
 namespace ADT\Forms;
 
+use ADT\EmailStrictInput;
+use ADT\Forms\Controls\PhoneNumberInput;
 use Closure;
 use Nette\Forms\Container;
+use Vodacek\Forms\Controls\DateInput;
 
-abstract class BaseContainer extends Container implements ContainerInterface
+/**
+ * @method DateInput addDate($name, $label, $type = 'datetime-local')
+ * @method PhoneNumberInput addPhoneNumber($name, $label = null)
+ * @method EmailStrictInput addEmailStrict($name, $label = null, $errorMessage = 'Invalid email address.')
+ * @method CurrencyInput addCurrency($name, $label = null, $currency = null)
+ * @method StaticContainer addStaticContainer(string $name, Closure $factory, ?string $isFilledComponentName = null, ?string $isRequiredMessage = null)
+ * @method DynamicContainer addDynamicContainer(string $name, Closure $factory, ?string $isFilledComponentName = null, ?string $isRequiredMessage = null)
+ */
+abstract class BaseContainer extends Container
 {
 	// because there is no "addError" method in Container class
 	// we have to create an IControl instance and call "addError" on it
