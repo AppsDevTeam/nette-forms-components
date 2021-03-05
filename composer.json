@@ -1,0 +1,15 @@
+{
+	"name": "adt/nette-forms-containers",
+	"type": "library",
+	"license": ["MIT"],
+	"require": {
+		"php": ">=7.4",
+		"nette/forms": "^3.0",
+		"nette/utils": "^3.0"
+	},
+	"autoload": {
+		"psr-4": {
+			"ADT\\Forms\\Controls\\": "src/"
+		}
+	}
+}
