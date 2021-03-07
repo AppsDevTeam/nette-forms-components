@@ -1,12 +1,12 @@
 # Nette Forms Components
 
-## `ADT\Forms\Form`
+## ADT\Forms\Form
 
 `Nette\Application\UI\Form` subclass using `ADT\Forms\BoostrapFormRenderer` to render a form in Bootstrap 5.
 
 Overrides `addError` method (the parent method does not use the translator lazy).
 
-## `ADT\Forms\BoostrapFormRenderer`
+## ADT\Forms\BoostrapFormRenderer
 
 Can be used on its own, without using `ADT\Forms\Form` (for example in `UblabooDatagrid::createComponentFilter` method, which creates `Nette\Application\UI\Form` instance)
 
