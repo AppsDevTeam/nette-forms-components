@@ -1,5 +1,7 @@
 # Nette Forms Components
 
+`composer require adt/nette-forms-components`
+
 ## ADT\Forms\Form
 
 `Nette\Application\UI\Form` subclass using `ADT\Forms\BoostrapFormRenderer` to render a form in Bootstrap 5.
