@@ -2,7 +2,7 @@
 
 ## `ADT\Forms\Form`
 
-`Nette\Application\UI\Form` subclass using `ADT\Forms\BoostrapFormRenderer` to render form in Bootstrap 5.
+`Nette\Application\UI\Form` subclass using `ADT\Forms\BoostrapFormRenderer` to render a form in Bootstrap 5.
 
 Overrides `addError` method (the parent method does not use the translator lazy).
 
