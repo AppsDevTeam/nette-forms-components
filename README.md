@@ -16,7 +16,7 @@ Under the hook, if the request is AJAX and the form is not valid, `ADT\Forms\Boo
 
 All components can be used on their own (without using `ADT\Forms\Form`).
 
-All components can be registered in your Bootstrap file like `ComponentName::register();` (for example `StaticContainer::register();`). This will allow you to use `addComponentName` methods (for example `$form->addStaticContainer('name')`) in your forms. All extensions are added via @method annotation so auto completion will work out of the box.
+All components can be registered in your Bootstrap file like `ComponentName::register();` (for example `StaticContainer::register();`). This will allow you to use `addComponentName` methods (for example `$form->addStaticContainer('name')`) in your forms. All extensions are added via @method annotation to the appropriate places so IDE auto completion should work out of the box.
 
 ### List
 
