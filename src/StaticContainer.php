@@ -36,7 +36,7 @@ class StaticContainer extends BaseContainer
 	}
 
 
-	public function getIsFilledComponent(): BaseControl
+	public function getIsFilledComponent(): ?BaseControl
 	{
 		return $this->isFilledComponent;
 	}
