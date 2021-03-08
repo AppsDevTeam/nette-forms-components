@@ -21,6 +21,8 @@ use Closure;
  */
 class Form extends \Nette\Application\UI\Form
 {
+	private ?BootstrapFormRenderer $renderer = null;
+
 	public function __construct(Nette\ComponentModel\IContainer $parent = null, string $name = null)
 	{
 		parent::__construct($parent, $name);
@@ -29,6 +31,14 @@ class Form extends \Nette\Application\UI\Form
 			// must be called here because onError and onRender callbacks are set in the constructor
 			$this->getRenderer();
 		});
+	}
+
+	public function getRenderer(): BootstrapFormRenderer
+	{
+		if ($this->renderer === null) {
+			$this->renderer = new BootstrapFormRenderer($this);
+		}
+		return $this->renderer;
 	}
 
 	/**
