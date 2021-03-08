@@ -84,7 +84,7 @@ abstract class BaseContainer extends Container
 
 	public static function register(): void
 	{
-		Container::extensionMethod('addStaticContainer', function (Container $_this, string $name, Closure $Factory, ?string $isFilledComponentName = null, ?string $isRequiredMessage = null) {
+		Container::extensionMethod('addStaticContainer', function (Container $_this, string $name, Closure $factory, ?string $isFilledComponentName = null, ?string $isRequiredMessage = null) {
 			return $_this[$name] = (new StaticContainerFactory($name, $factory, $isFilledComponentName))
 				->create()
 				->setRequired($isRequiredMessage);
