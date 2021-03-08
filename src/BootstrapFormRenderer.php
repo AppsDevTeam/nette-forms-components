@@ -6,14 +6,26 @@ namespace ADT\Forms;
 
 use ADT\Forms\Controls\PhoneNumberInput;
 use Nette;
-use Nette\Forms\Rendering\DefaultFormRenderer;
 use Nette\Utils\Html;
 use Nette\Utils\IHtmlString;
 
-class FormRenderer extends DefaultFormRenderer
+class BootstrapFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 {
+	const VERSION_4 = 4;
+	const VERSION_5 = 5;
+
+	public static int $version = self::VERSION_4;
+
 	public function __construct(Nette\Forms\Form $form)
 	{
+		$form->onError[] = function() {
+			static::sendErrorPayload();
+		};
+
+		$form->onRender[] = function(Nette\Forms\Form $form) {
+			static::makeBootstrap($form);
+		};
+
 		$this->form = $form;
 	}
 
@@ -158,5 +170,99 @@ class FormRenderer extends DefaultFormRenderer
 		return $control
 			? "\n\t" . $container->render()
 			: "\n" . $container->render(0);
+	}
+
+	public static function makeBootstrap(Nette\Forms\Container $container)
+	{
+		static::{'bootstrap' . static::$version}($container);
+	}
+
+	public static function sendErrorPayload(Nette\Application\UI\Form $form)
+	{
+		if ($form->getPresenter()->isAjax()) {
+			$renderer = $form->getRenderer();
+			$presenter = $form->getPresenter();
+
+			$renderer->wrappers['error']['container'] = null;
+			$presenter->payload->snippets['snippet-' . $form->getElementPrototype()->getAttribute('id') . '-errors'] = $renderer->renderErrors();
+
+			$renderer->wrappers['control']['errorcontainer'] = null;
+			/** @var IControl $control */
+			foreach ($form->getControls() as $control) {
+				if ($control->getErrors()) {
+					$presenter->payload->snippets['snippet-' . $control->getHtmlId() . '-errors'] = $renderer->renderErrors($control);
+				}
+			}
+
+			$presenter->sendPayload();
+		}
+	}
+
+	protected static function bootstrap4(Nette\Forms\Container $container): void
+	{
+		$renderer = $container->getForm()->getRenderer();
+		$renderer->wrappers['error']['container'] = 'div';
+		$renderer->wrappers['error']['item'] = 'div class="alert alert-danger"';
+		$renderer->wrappers['controls']['container'] = null;
+		$renderer->wrappers['group']['container'] = null;
+		$renderer->wrappers['pair']['container'] = 'div class=form-group';
+		$renderer->wrappers['label']['container'] = null;
+		$renderer->wrappers['control']['container'] = null;
+		$renderer->wrappers['control']['.error'] = 'is-invalid';
+		$renderer->wrappers['control']['.file'] = 'form-control-file';
+		$renderer->wrappers['control']['errorcontainer'] = 'div class=invalid-feedback';
+		$renderer->wrappers['control']['erroritem'] = 'div';
+		$renderer->wrappers['control']['description'] = 'small class=form-text text-muted';
+
+		// we need to create a template container for ToManyContainer
+		// to apply bootstrap4 styles below
+		/** @var ToManyContainer $_toManyContainer */
+		foreach ($container->getComponents(true, ToManyContainer::class) as $_toManyContainer) {
+			if ($_toManyContainer->isAllowAdding()) {
+				$_toManyContainer->getTemplate();
+			}
+		}
+
+		/** @var Nette\Forms\Controls\BaseControl $control */
+		foreach ($container->getControls() as $control) {
+			$type = $control->getOption('type');
+			if ($type === 'button') {
+				if ($control->getValidationScope() !== null) {
+					$control->getControlPrototype()->addClass('btn btn-outline-secondary');
+				} else {
+					$control->getControlPrototype()->addClass(empty($usedPrimary) ? 'btn btn-primary' : 'btn btn-outline-secondary');
+					$usedPrimary = true;
+				}
+
+			} elseif (in_array($type, ['checkbox', 'radio'], true)) {
+				if ($control instanceof Nette\Forms\Controls\Checkbox) {
+					$control->getLabelPrototype()->addClass('form-check-label');
+				} else {
+					$control->getItemLabelPrototype()->addClass('form-check-label');
+				}
+				$control->getControlPrototype()->addClass('form-check-input');
+				$control->getSeparatorPrototype()->setName('div')->addClass('form-check');
+
+			} elseif ($control instanceof PhoneNumberInput) {
+				$control->getControlPrototype(PhoneNumberInput::CONTROL_COUNTRY_CODE)->addClass('form-control');
+				$control->getControlPrototype(PhoneNumberInput::CONTROL_NATIONAL_NUMBER)->addClass('form-control');
+
+			} else {
+				$control->getControlPrototype()->addClass('form-control');
+			}
+		}
+	}
+
+	protected function bootstrap5(Nette\Forms\Container $container): void
+	{
+		static::bootstrap4($container);
+
+		$renderer = $container->getForm()->getRenderer();
+		$renderer->wrappers['pair']['container'] = 'div class=mb-3';
+		$renderer->wrappers['control']['.file'] = 'form-control';
+
+		foreach ($container->getControls() as $control) {
+			$control->getLabelPrototype()->addClass('form-label');
+		}
 	}
 }
