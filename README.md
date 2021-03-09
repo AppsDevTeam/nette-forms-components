@@ -18,6 +18,10 @@ If it's an AJAX request and the form is not valid, only snippets with error mess
 
 If you need, you can use static methods `ADT\Forms\BoostrapFormRenderer::makeBootstrap` and `ADT\Forms\BoostrapFormRenderer::sendErrorPayload` manually (for example in `\Ublaboo\DataGrid\DataGrid::setItemsDetailForm`, where the container is created dynamically).
 
+You can use `->setOption('description', 'Description text')` to use field description.
+
+You can use `->setOption('prepend', 'Text to prepend')` or `->setOption('append', 'Text to append')` to use proper inpur group styles.
+
 ## Components
 
 Can be used on their own, without using `ADT\Forms\Form`.
