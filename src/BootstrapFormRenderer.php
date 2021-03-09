@@ -18,8 +18,8 @@ class BootstrapFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 
 	public function __construct(Nette\Forms\Form $form)
 	{
-		$form->onError[] = function() {
-			static::sendErrorPayload();
+		$form->onError[] = function(Nette\Forms\Form $form) {
+			static::sendErrorPayload($form);
 		};
 
 		$form->onRender[] = function(Nette\Forms\Form $form) {
