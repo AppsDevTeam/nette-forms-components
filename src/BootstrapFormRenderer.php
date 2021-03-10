@@ -67,6 +67,36 @@ class BootstrapFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 			$description = $this->getValue('control requiredsuffix') . $description;
 		}
 
+		$prepend = $control->getOption('prepend') ?: '';
+		if ($prepend instanceof IHtmlString) {
+
+		} elseif ($prepend != null) { // intentionally ==
+			if ($control instanceof Nette\Forms\Controls\BaseControl) {
+				$prepend = $control->translate($prepend);
+			}
+		}
+		if ($prepend) {
+			$prepend = '<div class="input-group-prepend"><span class="input-group-text">' . $prepend . '</span></div>';
+		}
+
+		$append = $control->getOption('append') ?: '';
+		if ($append instanceof IHtmlString) {
+
+		} elseif ($append != null) { // intentionally ==
+			if ($control instanceof Nette\Forms\Controls\BaseControl) {
+				$append = $control->translate($append);
+			}
+		}
+		if ($append) {
+			$append = '<div class="input-group-append"><span class="input-group-text">' . $append . '</span></div>';
+		}
+
+		$inputGroupStart = $inputGroupEnd = '';
+		if ($prepend || $append) {
+			$inputGroupStart = '<div class="input-group">';
+			$inputGroupEnd = '</div>';
+		}
+
 		$control->setOption('rendered', true);
 		$el = $control->getControl();
 		if ($el instanceof Html) {
@@ -76,7 +106,7 @@ class BootstrapFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 			$el->class($this->getValue('control .error'), $control->hasErrors());
 		}
 
-		$el = $body->setHtml($el . $description . $this->renderErrors($control));
+		$el = $body->setHtml($inputGroupStart . $prepend . $el . $append . $this->renderErrors($control) . $description . $inputGroupEnd);
 
 		// Is this an instance of a RadioList or CheckboxList?
 		if (
@@ -212,14 +242,14 @@ class BootstrapFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 		$renderer->wrappers['control']['.file'] = 'form-control-file';
 		$renderer->wrappers['control']['errorcontainer'] = 'div class=invalid-feedback';
 		$renderer->wrappers['control']['erroritem'] = 'div';
-		$renderer->wrappers['control']['description'] = 'small class=form-text text-muted';
+		$renderer->wrappers['control']['description'] = 'small class="form-text text-muted"';
 
-		// we need to create a template container for ToManyContainer
+		// we need to create a template container for DynamicContainer
 		// to apply bootstrap4 styles below
-		/** @var ToManyContainer $_toManyContainer */
-		foreach ($container->getComponents(true, ToManyContainer::class) as $_toManyContainer) {
-			if ($_toManyContainer->isAllowAdding()) {
-				$_toManyContainer->getTemplate();
+		/** @var DynamicContainer $_dynamicContainer */
+		foreach ($container->getComponents(true, DynamicContainer::class) as $_dynamicContainer) {
+			if ($_dynamicContainer->isAllowAdding()) {
+				$_dynamicContainer->getTemplate();
 			}
 		}
 
