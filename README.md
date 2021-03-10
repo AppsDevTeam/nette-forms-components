@@ -1,5 +1,7 @@
 # Nette Forms Components
 
+## Installation
+
 `composer require adt/nette-forms-components`
 
 ## ADT\Forms\Form
@@ -7,6 +9,8 @@
 `Nette\Application\UI\Form` subclass using `ADT\Forms\BoostrapFormRenderer` to render a form in Bootstrap 5 (default) or 4.
 
 Overrides `addError` method (the parent method does not use the translator lazy).
+
+Have `@method` annotations for all ADT Nette Forms components so PhpStorm auto completion should work out of the box.
 
 ## ADT\Forms\BoostrapFormRenderer
 
@@ -22,13 +26,8 @@ You can use `->setOption('description', 'Description text')` to use field descri
 
 You can use `->setOption('prepend', 'Text to prepend')` or `->setOption('append', 'Text to append')` to use proper inpur group styles.
 
-## Components
+## Containers
 
 Can be used on their own, without using `ADT\Forms\Form`.
 
-Can be registered in your Bootstrap file like `ComponentName::register();` (for example `StaticContainer::register();`). This will allow you to use `addComponentName` methods (for example `$form->addStaticContainer('name')`) in your forms. All extensions are added via @method annotation to the appropriate places so IDE auto completion should work out of the box.
-
-### List
-
-- StaticContainer
-- DynamicContainer
+Can be registered in your Bootstrap file like `BaseContainer::register();`. This will allow you to use `addStaticContainer` and `addDynamicContainer` methods in your forms.
