@@ -8,6 +8,7 @@ use ADT\Forms\DynamicContainer;
 use ADT\Forms\StaticContainer;
 use Vodacek\Forms\Controls\DateInput;
 use ADT\EmailStrictInput;
+use \Closure;
 
 /**
  * @method DateInput addDate($name, $label, $type = 'datetime-local')
