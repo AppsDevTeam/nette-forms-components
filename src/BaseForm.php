@@ -6,6 +6,7 @@ use ADT\Forms\Form;
 use Nette\Application\UI\Control;
 use Nette\Application\UI\Presenter;
 use Nette\Forms\IControl;
+use Nette\Utils\ArrayHash;
 
 /**
  * @property-read Form $form
@@ -61,14 +62,18 @@ abstract class BaseForm extends Control
 
 	public function __construct()
 	{
-		$this->paramResolvers[] = function() {
-			if (is_subclass_of($type, Form::class)) {
+		$this->paramResolvers[] = function(string $type, $values) {
+			if ($type === Form::class || is_subclass_of($type, Form::class)) {
 				return $this->getForm();
+			} elseif ($type === ArrayHash::class) {
+				return $values;
+			} elseif ($type === 'array') {
+				return (array) $values;
 			}
 
 			return false;
 		};
-		
+
 		$this->monitor(Presenter::class, function($presenter) {
 			$form = $this->getForm();
 
@@ -94,7 +99,7 @@ abstract class BaseForm extends Control
 			}
 		});
 	}
-	
+
 	final public function validateFormCallback($form): void
 	{
 		$this->onBeforeValidateForm($form);
@@ -130,7 +135,9 @@ abstract class BaseForm extends Control
 		}
 
 		if ($form->isValid()) {
-			$this->invokeHandler([$this, 'onSuccess'], $form->getValues());
+			foreach ($this->onSuccess as $_handler) {
+				$this->invokeHandler($_handler, $form->getValues());
+			}
 		}
 	}
 
@@ -192,7 +199,7 @@ abstract class BaseForm extends Control
 		$this->onBeforeProcessForm[] = $onBeforeProcessForm;
 		return $this;
 	}
-	
+
 	public function setOnSuccess(callable $onSuccess): self
 	{
 		$this->onSuccess[] = $onSuccess;
@@ -207,25 +214,24 @@ abstract class BaseForm extends Control
 		return $this['form'];
 	}
 
-	private function invokeHandler($handler, $defaultParam)
+	private function invokeHandler($handler, $formValues)
 	{
 		$types = array_map([\Nette\Utils\Reflection::class, 'getParameterType'], \Nette\Utils\Callback::toReflection($handler)->getParameters());
 
 		$params = [];
 		foreach ($types as $_type) {
 			if (empty($_type)) {
-				$params[] = $defaultParam;
-				continue;
+				throw new \Exception('All parameter types must be specified.');
 			}
 
 			$param = null;
 			foreach ($this->paramResolvers as $_paramResolver) {
-				if ($param = $_paramResolver($_type)) {
+				if ($param = $_paramResolver($_type, $formValues)) {
 					$params[] = $param;
 					break;
 				}
 			}
-			
+
 			if (!$param) {
 				throw new \Exception('No resolver found for type ' . $_type . '.');
 			}
