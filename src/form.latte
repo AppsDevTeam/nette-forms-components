@@ -1,0 +1,51 @@
+{define errors}
+	{$control['form']->getRenderer()->renderErrors()|noescape}
+{/define}
+
+{define renderContainer}
+	{if $container instanceof Nette\Forms\Container}
+		{var $form = $container->getForm()}
+	{/if}
+	{if $container instanceof Nette\Forms\Form && $container->getGroups()}
+		{foreach $container->getGroups() as $_group}
+			{continueIf !$_group->getOption('visual')}
+
+			{include renderGroup form => $container, group => $_group}
+		{/foreach}
+	{else}
+		{foreach $container->getControls() as $c}
+			{continueIf $c instanceof \Nette\Forms\Controls\HiddenField}
+			{continueIf $c->getOption('rendered')}
+
+			{if $c instanceof \Nette\Forms\Container}
+				{include renderContainer, container => $c}
+			{else}
+				{formPair $c}
+			{/if}
+		{/foreach}
+	{/if}
+{/define}
+
+{define renderGroup}
+	{if is_string($group)}
+		{var $group = $form->getGroup($group)}
+	{/if}
+
+	<div n:tag-if="$group->getOption('label')" n:attr="id => $group->getOption('label'), hidden => $group->getOption('label') && isset ($form->getToggles()[$group->getOption('label')]) && !$form->getToggles()[$group->getOption('label')]">
+		{include renderContainer container => $group}
+	</div>
+
+	{php $group->setOption('visual', false)}
+{/define}
+
+{snippetArea formArea}
+	{ifset $customTemplatePath}
+		{include $customTemplatePath with blocks}
+	{else}
+		{form form}
+			{include errors}
+
+			{include renderContainer container => $form}
+		{/form}
+	{/ifset}
+{/snippetArea}

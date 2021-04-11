@@ -16,9 +16,8 @@ trait RecaptchaTrait
 	 */
 	public function injectRecaptcha()
 	{
-		$this->onAfterInit[] = function (Form $form) {
+		$this->setOnAfterInitForm(function (Form $form) {
 			if ($this->recaptchaConfig->enabled) {
-
 				$form->addHidden('recaptchaToken');
 
 				$form->getElementPrototype()->setAttribute('data-adt-recaptcha', json_encode([
@@ -38,6 +37,6 @@ trait RecaptchaTrait
 					}
 				};
 			}
-		};
+		});
 	}
 }
