@@ -39,6 +39,8 @@ class DynamicContainer extends BaseContainer
 
 	public function validate(?array $controls = NULL): void
 	{
+		parent::validate($controls);
+		
 		if (
 			$this->isRequired()
 			&&
