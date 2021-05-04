@@ -39,7 +39,7 @@ final class FormMacros extends MacroSet
 		$name = $node->tokenizer->fetchWord();
 		$node->replaced = true;
 		if (!$name) {
-			return $writer->write("echo %escape(\$ʟ_input->getError()) /* line $node->startLine */;");
+			return $writer->write("echo \$ʟ_input->getForm()->getRenderer()->renderErrors(\$ʟ_input) /* line $node->startLine */;");
 		} elseif ($name[0] === '$') {
 			return $writer->write(
 				'$ʟ_input = is_object(%0.word) ? %0.word : end($this->global->formsStack)[%0.word];'
