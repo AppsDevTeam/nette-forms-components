@@ -100,16 +100,16 @@ abstract class BaseForm extends Control
 		});
 	}
 
-	final public function validateFormCallback($form): void
+	final public function validateFormCallback(Form $form): void
 	{
 		$this->onBeforeValidateForm($form);
 
-		if (method_exists($this, 'validateForm')) {
+		if ($form->isValid() && method_exists($this, 'validateForm')) {
 			$this->invokeHandler([$this, 'validateForm'], $form->getUnsafeValues(null));
 		}
 	}
 
-	final public function processFormCallback($form)
+	final public function processFormCallback(Form $form)
 	{
 		if ($form->isSubmitted()->getValidationScope() !== null) {
 			return;
@@ -130,13 +130,15 @@ abstract class BaseForm extends Control
 
 		$this->onBeforeProcessForm($form);
 
-		if (method_exists($this, 'processForm')) {
-			$this->invokeHandler([$this, 'processForm'], $form->getValues());
-		}
-
 		if ($form->isValid()) {
-			foreach ($this->onSuccess as $_handler) {
-				$this->invokeHandler($_handler, $form->getValues());
+			if (method_exists($this, 'processForm')) {
+				$this->invokeHandler([$this, 'processForm'], $form->getValues());
+			}
+
+			if ($form->isValid()) {
+				foreach ($this->onSuccess as $_handler) {
+					$this->invokeHandler($_handler, $form->getValues());
+				}
 			}
 		}
 	}
