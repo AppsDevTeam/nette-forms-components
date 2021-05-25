@@ -205,15 +205,15 @@ class BootstrapFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 
 	public static function makeBootstrap(Nette\Forms\Container $container)
 	{
-	    if (static::$version === self::VERSION_4) {
-            static::bootstrap4($container);
+		if (static::$version === self::VERSION_4) {
+			static::bootstrap4($container);
 
-        } elseif (static::$version === self::VERSION_5) {
-            static::bootstrap5($container);
+		} elseif (static::$version === self::VERSION_5) {
+			static::bootstrap5($container);
 
-        } else {
-	        throw new \Exception('Unsupported Bootstrap version.');
-        }
+		} else {
+			throw new \Exception('Unsupported Bootstrap version.');
+		}
 	}
 
 	public static function sendErrorPayload(Nette\Application\UI\Form $form)
@@ -283,8 +283,8 @@ class BootstrapFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 				$control->getSeparatorPrototype()->setName('div')->addClass('form-check');
 
 			} elseif ($control instanceof PhoneNumberInput) {
-                $control->getControlPrototype(PhoneNumberInput::CONTROL_COUNTRY_CODE)->addClass('form-control');
-                $control->getControlPrototype(PhoneNumberInput::CONTROL_NATIONAL_NUMBER)->addClass('form-control');
+				$control->getControlPrototype(PhoneNumberInput::CONTROL_COUNTRY_CODE)->addClass('form-control');
+				$control->getControlPrototype(PhoneNumberInput::CONTROL_NATIONAL_NUMBER)->addClass('form-control');
 
 			} elseif ($type !== 'hidden') {
 				$control->getControlPrototype()->addClass('form-control');
@@ -301,14 +301,14 @@ class BootstrapFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 		$renderer->wrappers['control']['.file'] = 'form-control';
 
 		foreach ($container->getControls() as $control) {
-            $type = $control->getOption('type');
+			$type = $control->getOption('type');
 
-		    if (!in_array($type, ['checkbox', 'radio'], true)) {
-                $control->getLabelPrototype()->addClass('form-label');
+			if (!in_array($type, ['checkbox', 'radio'], true)) {
+				$control->getLabelPrototype()->addClass('form-label');
 
-            } elseif ($control instanceof SelectBox) {
-                $control->getControlPrototype()->removeClass('form-control')->addClass('form-select');
-            }
-        }
+			} elseif ($control instanceof SelectBox) {
+				$control->getControlPrototype()->removeClass('form-control')->addClass('form-select');
+			}
+		}
 	}
 }
