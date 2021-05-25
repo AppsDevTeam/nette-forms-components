@@ -6,6 +6,7 @@ namespace ADT\Forms;
 
 use ADT\Forms\Controls\PhoneNumberInput;
 use Nette;
+use Nette\Forms\Controls\SelectBox;
 use Nette\Utils\Html;
 use Nette\Utils\IHtmlString;
 
@@ -14,7 +15,7 @@ class BootstrapFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 	const VERSION_4 = 4;
 	const VERSION_5 = 5;
 
-	public static int $version = self::VERSION_4;
+	public static int $version = self::VERSION_5;
 
 	public function __construct(Nette\Forms\Form $form)
 	{
@@ -204,7 +205,15 @@ class BootstrapFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 
 	public static function makeBootstrap(Nette\Forms\Container $container)
 	{
-		static::{'bootstrap' . static::$version}($container);
+	    if (static::$version === self::VERSION_4) {
+            static::bootstrap4($container);
+
+        } elseif (static::$version === self::VERSION_5) {
+            static::bootstrap5($container);
+
+        } else {
+	        throw new \Exception('Unsupported Bootstrap version.');
+        }
 	}
 
 	public static function sendErrorPayload(Nette\Application\UI\Form $form)
@@ -274,16 +283,16 @@ class BootstrapFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 				$control->getSeparatorPrototype()->setName('div')->addClass('form-check');
 
 			} elseif ($control instanceof PhoneNumberInput) {
-				$control->getControlPrototype(PhoneNumberInput::CONTROL_COUNTRY_CODE)->addClass('form-control');
-				$control->getControlPrototype(PhoneNumberInput::CONTROL_NATIONAL_NUMBER)->addClass('form-control');
+                $control->getControlPrototype(PhoneNumberInput::CONTROL_COUNTRY_CODE)->addClass('form-control');
+                $control->getControlPrototype(PhoneNumberInput::CONTROL_NATIONAL_NUMBER)->addClass('form-control');
 
-			} else {
+			} elseif ($type !== 'hidden') {
 				$control->getControlPrototype()->addClass('form-control');
 			}
 		}
 	}
 
-	protected function bootstrap5(Nette\Forms\Container $container): void
+	protected static function bootstrap5(Nette\Forms\Container $container): void
 	{
 		static::bootstrap4($container);
 
@@ -292,7 +301,14 @@ class BootstrapFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 		$renderer->wrappers['control']['.file'] = 'form-control';
 
 		foreach ($container->getControls() as $control) {
-			$control->getLabelPrototype()->addClass('form-label');
-		}
+            $type = $control->getOption('type');
+
+		    if (!in_array($type, ['checkbox', 'radio'], true)) {
+                $control->getLabelPrototype()->addClass('form-label');
+
+            } elseif ($control instanceof SelectBox) {
+                $control->getControlPrototype()->removeClass('form-control')->addClass('form-select');
+            }
+        }
 	}
 }
