@@ -90,7 +90,7 @@ abstract class BaseForm extends Control
 			$this->onAfterInitForm($form);
 
 			if ($form->isSubmitted()) {
-				if (is_bool($form->isSubmitted())) {
+				if (is_bool($form->isSubmitted()) || $form->isSubmitted()->isDisabled()) {
 					$form->setSubmittedBy(null);
 				}
 				elseif ($form->isSubmitted()->getValidationScope() !== null) {
