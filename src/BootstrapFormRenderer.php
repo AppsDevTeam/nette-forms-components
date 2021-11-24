@@ -20,7 +20,9 @@ class BootstrapFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 	public function __construct(Nette\Forms\Form $form)
 	{
 		$form->onError[] = function(Nette\Forms\Form $form) {
-			static::makeBootstrap($form);
+			if ($form->getPresenter()->isAjax()) {
+				static::makeBootstrap($form);
+			}
 			static::sendErrorPayload($form);
 		};
 
