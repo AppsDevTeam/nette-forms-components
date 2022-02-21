@@ -268,7 +268,9 @@ class BootstrapFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 		/** @var Nette\Forms\Controls\BaseControl $control */
 		foreach ($container->getControls() as $control) {
 			$type = $control->getOption('type');
-			if ($type === 'button') {
+			if ($control instanceof Nette\Forms\Controls\Button) {
+				$control->renderAsButton();
+				
 				if ($control->getValidationScope() !== null) {
 					$control->getControlPrototype()->addClass('btn btn-outline-secondary');
 				} else {
