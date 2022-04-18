@@ -2,6 +2,7 @@
 
 namespace ADT\Forms;
 
+use Nette\Forms\Controls\TextBase;
 use ADT\Forms\Form;
 use Nette\Application\UI\Control;
 use Nette\Application\UI\Presenter;
@@ -18,6 +19,8 @@ use Nette\Utils\ArrayHash;
  */
 abstract class BaseForm extends Control
 {
+	const OPTION_ALLOW_4_BYTE_CHARACTERS = 'allow4ByteCharacters';
+
 	/** @var string|null */
 	public ?string $templateFilename = null;
 
@@ -60,6 +63,8 @@ abstract class BaseForm extends Control
 	 */
 	public $onSuccess = [];
 
+	protected ?string $disallow4ByteCharacterMessage = null;
+
 	public function __construct()
 	{
 		$this->paramResolvers[] = function(string $type, $values) {
@@ -88,6 +93,8 @@ abstract class BaseForm extends Control
 			$this->initForm($form);
 
 			$this->onAfterInitForm($form);
+
+			$this->add4BytesCharacterRule($form);
 
 			if ($form->isSubmitted()) {
 				if (is_bool($form->isSubmitted()) || $form->isSubmitted()->isDisabled()) {
@@ -240,5 +247,36 @@ abstract class BaseForm extends Control
 		}
 
 		$handler(...$params);
+	}
+	
+	public function disallow4ByteCharacters(string $errorMessage)
+	{
+		$this->disallow4ByteCharacterMessage = $errorMessage;
+	}
+
+	/**
+	 * don't allow UTF8 4 bytes characters in TextBase controls
+	 * if BaseForm::disallow4BytesCharactersMessage is set 
+	 * and TextBase::setOption(self::OPTION_ALLOW_4_BYTE_CHARACTERS, true) is not set
+	 */
+	private function add4BytesCharacterRule(Form $form)
+	{
+		if (!$this->disallow4ByteCharacterMessage) {
+			return;
+		}
+
+		foreach ($form->getControls() as $_control) {
+			if (!$_control instanceof TextBase) {
+				continue;
+			}
+
+			if ($_control->getOption(self::OPTION_ALLOW_4_BYTE_CHARACTERS, false)) {
+				continue;
+			}
+
+			$_control->addRule(function(TextBase $control) {
+				return !preg_match_all('~[\x{10000}-\x{10FFFF}]~u', $control->getValue());
+			}, $this->disallow4ByteCharacterMessage);
+		}
 	}
 }
