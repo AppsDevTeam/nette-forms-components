@@ -94,7 +94,7 @@ abstract class BaseForm extends Control
 
 			$this->onAfterInitForm($form);
 
-			$this->add4BytesCharacterRule($form);
+			$this->add4ByteCharacterRule($form);
 
 			if ($form->isSubmitted()) {
 				if (is_bool($form->isSubmitted()) || $form->isSubmitted()->isDisabled()) {
@@ -256,10 +256,10 @@ abstract class BaseForm extends Control
 
 	/**
 	 * don't allow UTF8 4 bytes characters in TextBase controls
-	 * if BaseForm::disallow4BytesCharactersMessage is set 
+	 * if BaseForm::disallow4ByteCharacterMessage is set
 	 * and TextBase::setOption(self::OPTION_ALLOW_4_BYTE_CHARACTERS, true) is not set
 	 */
-	private function add4BytesCharacterRule(Form $form)
+	private function add4ByteCharacterRule(Form $form)
 	{
 		if (!$this->disallow4ByteCharacterMessage) {
 			return;
