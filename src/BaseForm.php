@@ -2,6 +2,7 @@
 
 namespace ADT\Forms;
 
+use ADT\Utils\Strings;
 use Nette\Forms\Controls\TextBase;
 use ADT\Forms\Form;
 use Nette\Application\UI\Control;
@@ -275,7 +276,7 @@ abstract class BaseForm extends Control
 			}
 
 			$_control->addRule(function(TextBase $control) {
-				return !preg_match_all('~[\x{10000}-\x{10FFFF}]~u', $control->getValue());
+				return !Strings::containsMultibyteCharacters($control->getValue(), 4);
 			}, $this->disallow4ByteCharacterMessage);
 		}
 	}
