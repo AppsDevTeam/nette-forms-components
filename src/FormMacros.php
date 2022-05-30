@@ -21,7 +21,19 @@ final class FormMacros extends MacroSet
 	public static function install(Latte\Compiler $compiler): void
 	{
 		$me = new static($compiler);
+		
 		$me->addMacro('inputError', [$me, 'macroInputError']);
+		
+		$me->addMacro('formPair', fn(MacroNode $node, PhpWriter $writer) => $writer->write(
+			'$formOrContainer = end($this->global->formsStack);'
+			. '$formRenderer = $formOrContainer->getForm()->renderer;'
+			. '$__formPair = is_object(%node.word) ? %node.word : $formOrContainer[%node.word];'
+			. '$attrs = %node.array;'
+			. '$originalWrapper = $formRenderer->wrappers["pair"]["container"];'
+			. 'if ($attrs) $formRenderer->wrappers["pair"]["container"] = "div " . str_replace("=", "=\"", urldecode(http_build_query($attrs, "", "\", "))) . "\"";'
+			. 'echo $formRenderer->renderPair(is_object($__formPair) ? $__formPair : $formOrContainer[$__formPair]);'
+			. 'if ($attrs) $formRenderer->wrappers["pair"]["container"] = $originalWrapper;',
+		));
 	}
 
 
