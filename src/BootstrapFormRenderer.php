@@ -30,10 +30,12 @@ class BootstrapFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 			static::makeBootstrap($form);
 		};
 
+		$form->getElementPrototype()->setAttribute('data-adt-submit-form', true);
+
 		$this->form = $form;
 	}
 
-	public function renderLabel(Nette\Forms\IControl $control): Html
+	public function renderLabel(Nette\Forms\Control $control): Html
 	{
 		if ($control->getLabel() && $control->getLabel()->getHtml()) {
 			return parent::renderLabel($control);
@@ -42,7 +44,7 @@ class BootstrapFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 		return Html::el();
 	}
 
-	public function renderControl(Nette\Forms\IControl $control): Html
+	public function renderControl(Nette\Forms\Control $control): Html
 	{
 		$body = $this->getWrapper('control container');
 		if ($this->counter % 2) {
@@ -54,7 +56,7 @@ class BootstrapFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 		}
 
 		$description = $control->getOption('description');
-		if ($description instanceof IHtmlString) {
+		if ($description instanceof Nette\HtmlStringable) {
 			$description = ' ' . $description;
 
 		} elseif ($description != null) { // intentionally ==
@@ -72,7 +74,7 @@ class BootstrapFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 		}
 
 		$prepend = $control->getOption('prepend') ?: '';
-		if ($prepend instanceof IHtmlString) {
+		if ($prepend instanceof Nette\HtmlStringable) {
 
 		} elseif ($prepend != null) { // intentionally ==
 			if ($control instanceof Nette\Forms\Controls\BaseControl) {
@@ -84,7 +86,7 @@ class BootstrapFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 		}
 
 		$append = $control->getOption('append') ?: '';
-		if ($append instanceof IHtmlString) {
+		if ($append instanceof Nette\HtmlStringable) {
 
 		} elseif ($append != null) { // intentionally ==
 			if ($control instanceof Nette\Forms\Controls\BaseControl) {
@@ -150,8 +152,8 @@ class BootstrapFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 		elseif ($control instanceof PhoneNumberInput) {
 			$el = Html::el('div')
 				->setAttribute('class', self::$version === self::VERSION_4 ? 'form-row' : 'row g-2')
-				->addHtml('<div class="col-5">' . $control->getControlPart(PhoneNumberInput::CONTROL_COUNTRY_CODE)->addClass('form-select') . '</div>')
-				->addHtml('<div class="col-7">' . $control->getControlPart(PhoneNumberInput::CONTROL_NATIONAL_NUMBER)->addClass('form-control') . $description . $this->renderErrors($control) . '</div>');
+				->addHtml('<div class="col-5">' . $control->getControlPart(PhoneNumberInput::CONTROL_COUNTRY_CODE)->setAttribute('class', 'form-select') . '</div>')
+				->addHtml('<div class="col-7">' . $control->getControlPart(PhoneNumberInput::CONTROL_NATIONAL_NUMBER)->setAttribute('class', 'form-control') . $description . $this->renderErrors($control) . '</div>');
 		}
 
 		return $el;
@@ -160,7 +162,7 @@ class BootstrapFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 	/**
 	 * Renders validation errors (per form or per control).
 	 */
-	public function renderErrors(Nette\Forms\IControl $control = null, bool $own = true): string
+	public function renderErrors(Nette\Forms\Control $control = null, bool $own = true): string
 	{
 		$errors = $control
 			? $control->getErrors()
@@ -219,7 +221,10 @@ class BootstrapFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 		}
 	}
 
-	public static function sendErrorPayload(Nette\Application\UI\Form $form)
+	/**
+	 * @throws Nette\Application\AbortException
+	 */
+	public static function sendErrorPayload(Form $form)
 	{
 		if ($form->getPresenter()->isAjax()) {
 			$renderer = $form->getRenderer();
@@ -229,7 +234,7 @@ class BootstrapFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 			$presenter->payload->snippets['snippet-' . $form->getElementPrototype()->getAttribute('id') . '-errors'] = $renderer->renderErrors();
 
 			$renderer->wrappers['control']['errorcontainer'] = null;
-			/** @var IControl $control */
+			/** @var Nette\Forms\Control $control */
 			foreach ($form->getControls() as $control) {
 				if ($control->getErrors()) {
 					$presenter->payload->snippets['snippet-' . $control->getHtmlId() . '-errors'] = $renderer->renderErrors($control);
@@ -285,7 +290,7 @@ class BootstrapFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 					$control->getItemLabelPrototype()->addClass('form-check-label');
 				}
 				$control->getControlPrototype()->addClass('form-check-input');
-				$control->getSeparatorPrototype()->setName('div')->addClass('form-check');
+				$control->getContainerPrototype()->setName('div')->addClass('form-check');
 
 			} elseif ($control instanceof PhoneNumberInput) {
 				$control->getControlPrototype(PhoneNumberInput::CONTROL_COUNTRY_CODE)->addClass('form-control');
