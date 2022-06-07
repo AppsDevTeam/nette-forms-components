@@ -8,7 +8,7 @@ use Nette\Application\UI\Presenter;
 class Form extends \Nette\Application\UI\Form
 {
 	use AnnotationsTrait;
-	
+
 	private ?BootstrapFormRenderer $renderer = null;
 
 	public function __construct(Nette\ComponentModel\IContainer $parent = null, string $name = null)
@@ -19,6 +19,69 @@ class Form extends \Nette\Application\UI\Form
 			// must be called here because onError and onRender callbacks are set in the constructor
 			$this->getRenderer();
 		});
+	}
+
+	/**
+	 * @template T of object
+	 * @param class-string<T> $className
+	 * @return ?T
+	 *
+	 * @throws \Exception
+	 */
+	public function getComponentGeneric(string $name, string $className, bool $throw = true): ?object
+	{
+		$component = $this->getComponent($name, $throw);
+
+		if (!$component instanceof $className) {
+			throw new \Exception();
+		}
+
+		return $component;
+	}
+
+	public function getComponentButton(string $name, bool $throw = true): ?Nette\Forms\Controls\Button
+	{
+		return parent::getComponent($name, $throw);
+	}
+
+	public function getComponentCheckbox(string $name, bool $throw = true): ?Nette\Forms\Controls\Checkbox
+	{
+		return parent::getComponent($name, $throw);
+	}
+
+	public function getComponentCheckboxList(string $name, bool $throw = true): ?Nette\Forms\Controls\CheckboxList
+	{
+		return parent::getComponent($name, $throw);
+	}
+
+	public function getComponentMultiSelectBox(string $name, bool $throw = true): ?Nette\Forms\Controls\MultiSelectBox
+	{
+		return parent::getComponent($name, $throw);
+	}
+
+	public function getComponentRadioList(string $name, bool $throw = true): ?Nette\Forms\Controls\RadioList
+	{
+		return parent::getComponent($name, $throw);
+	}
+
+	public function getComponentSelectBox(string $name, bool $throw = true): ?Nette\Forms\Controls\SelectBox
+	{
+		return parent::getComponent($name, $throw);
+	}
+
+	public function getComponentSubmitButton(string $name, bool $throw = true): ?Nette\Forms\Controls\SubmitButton
+	{
+		return parent::getComponent($name, $throw);
+	}
+
+	public function getComponentTextArea(string $name, bool $throw = true): ?Nette\Forms\Controls\TextArea
+	{
+		return parent::getComponent($name, $throw);
+	}
+
+	public function getComponentTextInput(string $name, bool $throw = true): ?Nette\Forms\Controls\TextInput
+	{
+		return parent::getComponent($name, $throw);
 	}
 
 	public function getRenderer(): BootstrapFormRenderer
