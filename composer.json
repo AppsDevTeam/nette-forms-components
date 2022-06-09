@@ -6,7 +6,13 @@
 		"php": ">=7.4",
 		"nette/forms": "^3.1.4",
 		"nette/utils": "^3.0",
-		"adt/utils": "^2.3"
+		"adt/utils": "^2.3",
+		"voda/date-input": "^2.2",
+		"adt/nette-forms-phone-number": "^1.1",
+		"adt/nette-forms-email-strict": "^1.1",
+		"adt/nette-forms-currency": "^1.3",
+		"nasext/dependent-select-box": "dev-master",
+		"adt/ajax-select": "^2.2"
 	},
 	"autoload": {
 		"psr-4": {

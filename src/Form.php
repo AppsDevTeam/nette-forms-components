@@ -21,25 +21,57 @@ class Form extends \Nette\Application\UI\Form
 		});
 	}
 
-	/**
-	 * @template T of object
-	 * @param class-string<T> $className
-	 * @return ?T
-	 *
-	 * @throws \Exception
-	 */
-	public function getComponentGeneric(string $name, string $className, bool $throw = true): ?object
+	public function getComponentButton(string $name, bool $throw = true): ?Nette\Forms\Controls\Button
 	{
-		$component = $this->getComponent($name, $throw);
-
-		if (!$component instanceof $className) {
-			throw new \Exception();
-		}
-
-		return $component;
+		return parent::getComponent($name, $throw);
 	}
 
-	public function getComponentButton(string $name, bool $throw = true): ?Nette\Forms\Controls\Button
+	public function getComponentDate(string $name, bool $throw = true): ?\Vodacek\Forms\Controls\DateInput
+	{
+		return parent::getComponent($name, $throw);
+	}
+
+	public function getComponentPhoneNumber(string $name, bool $throw = true): ?\ADT\Forms\Controls\PhoneNumberInput
+	{
+		return parent::getComponent($name, $throw);
+	}
+
+	public function getComponentCurrency(string $name, bool $throw = true): ?\ADT\Forms\Controls\CurrencyInput
+	{
+		return parent::getComponent($name, $throw);
+	}
+
+	public function getComponentStaticContainer(string $name, bool $throw = true): ?StaticContainer
+	{
+		return parent::getComponent($name, $throw);
+	}
+
+	public function getComponentDynamicContainer(string $name, bool $throw = true): ?DynamicContainer
+	{
+		return parent::getComponent($name, $throw);
+	}
+
+	public function getComponentUploadControl(string $name, bool $throw = true): ?Nette\Forms\Controls\UploadControl
+	{
+		return parent::getComponent($name, $throw);
+	}
+
+	public function getComponentDependentSelectBox(string $name, bool $throw = true): ?\NasExt\Forms\Controls\DependentSelectBox
+	{
+		return parent::getComponent($name, $throw);
+	}
+
+	public function getComponentDependentMultiSelectBox(string $name, bool $throw = true): ?\NasExt\Forms\Controls\DependentMultiSelectBox
+	{
+		return parent::getComponent($name, $throw);
+	}
+
+	public function getComponentAjaxSelect(string $name, bool $throw = true): ?\ADT\Components\AjaxSelect\AjaxSelect
+	{
+		return parent::getComponent($name, $throw);
+	}
+
+	public function getComponentAjaxMultiSelect(string $name, bool $throw = true): ?\ADT\Components\AjaxSelect\AjaxMultiSelect
 	{
 		return parent::getComponent($name, $throw);
 	}
