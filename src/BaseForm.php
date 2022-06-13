@@ -3,12 +3,14 @@
 namespace ADT\Forms;
 
 use ADT\Utils\Strings;
+use Exception;
 use Nette\Forms\Controls\TextBase;
-use ADT\Forms\Form;
 use Nette\Application\UI\Control;
 use Nette\Application\UI\Presenter;
-use Nette\Forms\IControl;
 use Nette\Utils\ArrayHash;
+use Nette\Utils\Callback;
+use Nette\Utils\Reflection;
+use ReflectionException;
 
 /**
  * @property-read Form $form
@@ -16,11 +18,14 @@ use Nette\Utils\ArrayHash;
  * @method onAfterInitForm($form)
  * @method onBeforeValidateForm($form)
  * @method onBeforeProcessForm($form)
- * @method onSucess($form)
+ * @method onSuccess($form)
  */
 abstract class BaseForm extends Control
 {
 	const OPTION_ALLOW_4_BYTE_CHARACTERS = 'allow4ByteCharacters';
+
+	/** @var Form */
+	protected $form;
 
 	/** @var string|null */
 	public ?string $templateFilename = null;
@@ -32,37 +37,37 @@ abstract class BaseForm extends Control
 	public bool $emptyHiddenToggleControls = false;
 
 	/** @var callable[] */
-	protected $paramResolvers = [];
+	protected array $paramResolvers = [];
 
 	/**
 	 * @internal
 	 * @var callable[]
 	 */
-	public $onBeforeInitForm = [];
+	public array $onBeforeInitForm = [];
 
 	/**
 	 * @internal
 	 * @var callable[]
 	 */
-	public $onAfterInitForm = [];
+	public array $onAfterInitForm = [];
 
 	/**
 	 * @internal
 	 * @var callable[]
 	 */
-	public $onBeforeValidateForm = [];
+	public array $onBeforeValidateForm = [];
 
 	/**
 	 * @internal
 	 * @var callable[]
 	 */
-	public $onBeforeProcessForm = [];
+	public array $onBeforeProcessForm = [];
 
 	/**
 	 * @internal
 	 * @var callable[]
 	 */
-	public $onSuccess = [];
+	public array $onSuccess = [];
 
 	protected ?string $disallow4ByteCharacterMessage = null;
 
@@ -70,9 +75,11 @@ abstract class BaseForm extends Control
 	{
 		$this->paramResolvers[] = function(string $type, $values) {
 			if ($type === Form::class || is_subclass_of($type, Form::class)) {
-				return $this->getForm();
+				return $this->form;
 			} elseif ($type === ArrayHash::class) {
 				return $values;
+			} elseif ($type === Presenter::class || is_subclass_of($type, Presenter::class)) {
+				return $this->presenter;
 			} elseif ($type === 'array') {
 				return (array) $values;
 			}
@@ -80,8 +87,8 @@ abstract class BaseForm extends Control
 			return false;
 		};
 
-		$this->monitor(Presenter::class, function($presenter) {
-			$form = $this->getForm();
+		$this->monitor(Presenter::class, function() {
+			$form = $this->form = $this['form'] = $this->createComponentForm();
 
 			/** @link BaseForm::validateFormCallback() */
 			$form->onValidate[] = [$this, 'validateFormCallback'];
@@ -91,6 +98,9 @@ abstract class BaseForm extends Control
 
 			$this->onBeforeInitForm($form);
 
+			if (!method_exists($this, 'initForm')) {
+				throw new Exception('Please define the "initForm($form)" method.');
+			}
 			$this->initForm($form);
 
 			$this->onAfterInitForm($form);
@@ -108,6 +118,9 @@ abstract class BaseForm extends Control
 		});
 	}
 
+	/**
+	 * @throws ReflectionException
+	 */
 	final public function validateFormCallback(Form $form): void
 	{
 		$this->onBeforeValidateForm($form);
@@ -117,6 +130,9 @@ abstract class BaseForm extends Control
 		}
 	}
 
+	/**
+	 * @throws Exception
+	 */
 	final public function processFormCallback(Form $form)
 	{
 		if ($form->isSubmitted()->getValidationScope() !== null) {
@@ -151,7 +167,7 @@ abstract class BaseForm extends Control
 		}
 	}
 
-	public function render()
+	public function render(): void
 	{
 		$this->template->setFile(__DIR__ . DIRECTORY_SEPARATOR . 'form.latte');
 
@@ -166,7 +182,7 @@ abstract class BaseForm extends Control
 		}
 
 		if ($this->isAjax) {
-			$this->getForm()->getElementPrototype()->class[] = 'ajax';
+			$this->form->getElementPrototype()->class[] = 'ajax';
 		}
 
 		if ($this->presenter->isAjax()) {
@@ -176,14 +192,14 @@ abstract class BaseForm extends Control
 		$this->template->render();
 	}
 
-	protected function createComponentForm()
+	protected function createComponentForm(): Form
 	{
 		return new Form();
 	}
 
 	protected function _()
 	{
-		return call_user_func_array([$this->getForm()->getTranslator(), 'translate'], func_get_args());
+		return call_user_func_array([$this->form->getTranslator(), 'translate'], func_get_args());
 	}
 
 	public function setOnBeforeInitForm(callable $onBeforeInitForm): self
@@ -217,21 +233,17 @@ abstract class BaseForm extends Control
 	}
 
 	/**
-	 * @return \ADT\Forms\Form
+	 * @throws ReflectionException
+	 * @throws Exception
 	 */
-	public function getForm()
-	{
-		return $this['form'];
-	}
-
 	private function invokeHandler($handler, $formValues)
 	{
-		$types = array_map([\Nette\Utils\Reflection::class, 'getParameterType'], \Nette\Utils\Callback::toReflection($handler)->getParameters());
+		$types = array_map([Reflection::class, 'getParameterType'], Callback::toReflection($handler)->getParameters());
 
 		$params = [];
 		foreach ($types as $_type) {
 			if (empty($_type)) {
-				throw new \Exception('All parameter types must be specified.');
+				throw new Exception('All parameter types must be specified.');
 			}
 
 			$param = null;
@@ -243,13 +255,13 @@ abstract class BaseForm extends Control
 			}
 
 			if (!$param) {
-				throw new \Exception('No resolver found for type ' . $_type . '.');
+				throw new Exception('No resolver found for type ' . $_type . '.');
 			}
 		}
 
 		$handler(...$params);
 	}
-	
+
 	public function disallow4ByteCharacters(string $errorMessage)
 	{
 		$this->disallow4ByteCharacterMessage = $errorMessage;
@@ -279,5 +291,14 @@ abstract class BaseForm extends Control
 				return !Strings::containsMultibyteCharacters($control->getValue(), 4);
 			}, $this->disallow4ByteCharacterMessage);
 		}
+	}
+
+	/**
+	 * @deprecated Use $this->form instead
+	 * @return Form
+	 */
+	public function getForm()
+	{
+		return $this['form'];
 	}
 }
