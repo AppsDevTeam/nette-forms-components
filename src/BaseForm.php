@@ -73,15 +73,17 @@ abstract class BaseForm extends Control
 
 	public function __construct()
 	{
-		$this->paramResolvers[] = function(string $type, $values) {
+		$this->paramResolvers[] = function(string $type, $values = null) {
 			if ($type === Form::class || is_subclass_of($type, Form::class)) {
 				return $this->form;
-			} elseif ($type === ArrayHash::class) {
-				return $values;
 			} elseif ($type === Presenter::class || is_subclass_of($type, Presenter::class)) {
 				return $this->presenter;
-			} elseif ($type === 'array') {
-				return (array) $values;
+			} elseif ($values) {
+				if ($type === ArrayHash::class) {
+					return $values;
+				} elseif ($type === 'array') {
+					return (array) $values;
+				}
 			}
 
 			return false;
@@ -189,6 +191,10 @@ abstract class BaseForm extends Control
 			$this->redrawControl('formArea');
 		}
 
+		if (method_exists($this, 'renderForm')) {
+			$this->invokeHandler([$this, 'renderForm']);
+		}
+
 		$this->template->render();
 	}
 
@@ -236,7 +242,7 @@ abstract class BaseForm extends Control
 	 * @throws ReflectionException
 	 * @throws Exception
 	 */
-	private function invokeHandler($handler, $formValues)
+	private function invokeHandler($handler, $formValues = null)
 	{
 		$types = array_map([Reflection::class, 'getParameterType'], Callback::toReflection($handler)->getParameters());
 
