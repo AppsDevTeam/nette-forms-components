@@ -76,6 +76,16 @@ class Form extends \Nette\Application\UI\Form
 		return parent::getComponent($name, $throw);
 	}
 
+	public function getComponentDynamicSelect(string $name, bool $throw = true): ?\ADT\Components\AjaxSelect\DynamicSelect
+	{
+		return parent::getComponent($name, $throw);
+	}
+
+	public function getComponentDynamicMultiSelect(string $name, bool $throw = true): ?\ADT\Components\AjaxSelect\DynamicMultiSelect
+	{
+		return parent::getComponent($name, $throw);
+	}
+
 	public function getComponentCheckbox(string $name, bool $throw = true): ?Nette\Forms\Controls\Checkbox
 	{
 		return parent::getComponent($name, $throw);
