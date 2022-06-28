@@ -117,37 +117,25 @@ class BootstrapFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 		// Is this an instance of a RadioList or CheckboxList?
 		if (
 			$control instanceof Nette\Forms\Controls\RadioList ||
-			$control instanceof Nette\Forms\Controls\CheckboxList
+			$control instanceof Nette\Forms\Controls\CheckboxList ||
+			$control instanceof Nette\Forms\Controls\Checkbox
 		) {
-			// Get original separator
-			$sep = $control->getSeparatorPrototype();
-			$sep->setHtml('');
+			// Get original container
+			$container = $control->getContainerPrototype();
+			$container->removeChildren();
 
 			// Create an empty Html container object
 			$el = Html::el();
 
 			// Get all the child items
-			$items = $control->getItems();
+			$items = $control instanceof Nette\Forms\Controls\Checkbox ? [$control] : $control->getItems();
 			// For each child item, add the appropriate control part and label part after one another
 			foreach($items as $key => $item) {
-				$_sep = clone $sep;
-				$_sep->addHtml($control->getControlPart($key));
-				$_sep->addHtml($control->getLabelPart($key));
-				$el->addHtml($_sep);
+				$_container = clone $container;
+				$_container->addHtml($control->getControlPart($key));
+				$_container->addHtml($control->getLabelPart($key));
+				$el->addHtml($_container);
 			}
-		}
-		elseif ($control instanceof Nette\Forms\Controls\Checkbox) {
-			// Create an empty Html container object
-			$el = Html::el();
-
-			// Get original separator
-			$sep = $control->getSeparatorPrototype();
-			$sep->setHtml('');
-
-			$_sep = clone $sep;
-			$_sep->addHtml($control->getControlPart());
-			$_sep->addHtml($control->getLabelPart());
-			$el->addHtml($_sep);
 		}
 		elseif ($control instanceof PhoneNumberInput) {
 			$el = Html::el('div')
