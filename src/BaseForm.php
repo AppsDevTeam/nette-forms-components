@@ -135,7 +135,7 @@ abstract class BaseForm extends Control
 	/**
 	 * @throws Exception
 	 */
-	final public function processFormCallback(Form $form)
+	final public function processFormCallback(Form $form): void
 	{
 		if ($form->isSubmitted()->getValidationScope() !== null) {
 			return;
@@ -208,31 +208,31 @@ abstract class BaseForm extends Control
 		return call_user_func_array([$this->form->getTranslator(), 'translate'], func_get_args());
 	}
 
-	public function setOnBeforeInitForm(callable $onBeforeInitForm): self
+	public function setOnBeforeInitForm(callable $onBeforeInitForm): static
 	{
 		$this->onBeforeInitForm[] = $onBeforeInitForm;
 		return $this;
 	}
 
-	public function setOnAfterInitForm(callable $onAfterInitForm): self
+	public function setOnAfterInitForm(callable $onAfterInitForm): static
 	{
 		$this->onAfterInitForm[] = $onAfterInitForm;
 		return $this;
 	}
 
-	public function setOnBeforeValidateForm(callable $onBeforeValidateForm): self
+	public function setOnBeforeValidateForm(callable $onBeforeValidateForm): static
 	{
 		$this->onBeforeValidateForm[] = $onBeforeValidateForm;
 		return $this;
 	}
 
-	public function setOnBeforeProcessForm(callable $onBeforeProcessForm): self
+	public function setOnBeforeProcessForm(callable $onBeforeProcessForm): static
 	{
 		$this->onBeforeProcessForm[] = $onBeforeProcessForm;
 		return $this;
 	}
 
-	public function setOnSuccess(callable $onSuccess): self
+	public function setOnSuccess(callable $onSuccess): static
 	{
 		$this->onSuccess[] = $onSuccess;
 		return $this;
