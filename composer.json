@@ -3,7 +3,7 @@
 	"type": "library",
 	"license": ["MIT"],
 	"require": {
-		"php": ">=7.4",
+		"php": ">=8.0",
 		"nette/application": "^3.0",
 		"nette/forms": "^3.1.4",
 		"nette/utils": "^3.0",
