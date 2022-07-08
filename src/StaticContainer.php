@@ -8,6 +8,8 @@ use Nette\Forms\Controls\BaseControl;
 
 class StaticContainer extends BaseContainer
 {
+	use GetComponentTrait;
+
 	private ?BaseControl $isFilledComponent = null;
 	private bool $isTemplate = false;
 
