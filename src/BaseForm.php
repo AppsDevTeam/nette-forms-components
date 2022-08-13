@@ -2,9 +2,7 @@
 
 namespace ADT\Forms;
 
-use ADT\Utils\Strings;
 use Exception;
-use Nette\Forms\Controls\TextBase;
 use Nette\Application\UI\Control;
 use Nette\Application\UI\Presenter;
 use Nette\Utils\ArrayHash;
@@ -22,8 +20,6 @@ use ReflectionException;
  */
 abstract class BaseForm extends Control
 {
-	const OPTION_ALLOW_4_BYTE_CHARACTERS = 'allow4ByteCharacters';
-
 	/** @var Form */
 	protected $form;
 
@@ -69,8 +65,6 @@ abstract class BaseForm extends Control
 	 */
 	public array $onSuccess = [];
 
-	protected ?string $disallow4ByteCharacterMessage = null;
-
 	public function __construct()
 	{
 		$this->paramResolvers[] = function(string $type, $values = null) {
@@ -106,8 +100,6 @@ abstract class BaseForm extends Control
 			$this->initForm($form);
 
 			$this->onAfterInitForm($form);
-
-			$this->add4ByteCharacterRule($form);
 
 			if ($form->isSubmitted()) {
 				if (is_bool($form->isSubmitted()) || $form->isSubmitted()->isDisabled()) {
@@ -169,6 +161,9 @@ abstract class BaseForm extends Control
 		}
 	}
 
+	/**
+	 * @throws ReflectionException
+	 */
 	public function render(): void
 	{
 		$this->template->setFile(__DIR__ . DIRECTORY_SEPARATOR . 'form.latte');
@@ -266,37 +261,6 @@ abstract class BaseForm extends Control
 		}
 
 		$handler(...$params);
-	}
-
-	public function disallow4ByteCharacters(string $errorMessage)
-	{
-		$this->disallow4ByteCharacterMessage = $errorMessage;
-	}
-
-	/**
-	 * don't allow UTF8 4 bytes characters in TextBase controls
-	 * if BaseForm::disallow4ByteCharacterMessage is set
-	 * and TextBase::setOption(self::OPTION_ALLOW_4_BYTE_CHARACTERS, true) is not set
-	 */
-	private function add4ByteCharacterRule(Form $form)
-	{
-		if (!$this->disallow4ByteCharacterMessage) {
-			return;
-		}
-
-		foreach ($form->getControls() as $_control) {
-			if (!$_control instanceof TextBase) {
-				continue;
-			}
-
-			if ($_control->getOption(self::OPTION_ALLOW_4_BYTE_CHARACTERS, false)) {
-				continue;
-			}
-
-			$_control->addRule(function(TextBase $control) {
-				return !Strings::containsMultibyteCharacters($control->getValue(), 4);
-			}, $this->disallow4ByteCharacterMessage);
-		}
 	}
 
 	/**
