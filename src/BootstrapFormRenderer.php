@@ -212,7 +212,7 @@ class BootstrapFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 	/**
 	 * @throws Nette\Application\AbortException
 	 */
-	public static function sendErrorPayload(Form $form)
+	public static function sendErrorPayload(Nette\Application\UI\Form $form)
 	{
 		if ($form->getPresenter()->isAjax()) {
 			$renderer = $form->getRenderer();
