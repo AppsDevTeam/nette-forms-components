@@ -139,8 +139,8 @@ class BootstrapFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 		}
 		elseif ($control instanceof PhoneNumberInput) {
 			$el = Html::el('div')
-				->setAttribute('class', self::$version === self::VERSION_4 ? 'form-row' : 'row g-2')
-				->addHtml('<div class="col-5">' . $control->getControlPart(PhoneNumberInput::CONTROL_COUNTRY_CODE)->setAttribute('class', 'form-select') . '</div>')
+				->setAttribute('class', static::$version === self::VERSION_4 ? 'form-row' : 'row g-2')
+				->addHtml('<div class="col-5">' . $control->getControlPart(PhoneNumberInput::CONTROL_COUNTRY_CODE)->setAttribute('class', static::$version === self::VERSION_4 ? 'form-control' : 'form-select') . '</div>')
 				->addHtml('<div class="col-7">' . $control->getControlPart(PhoneNumberInput::CONTROL_NATIONAL_NUMBER)->setAttribute('class', 'form-control') . $description . $this->renderErrors($control) . '</div>');
 		}
 
