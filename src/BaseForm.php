@@ -203,13 +203,13 @@ abstract class BaseForm extends Control
 		return call_user_func_array([$this->form->getTranslator(), 'translate'], func_get_args());
 	}
 
-	public function setOnBeforeInitForm(callable $onBeforeInitForm): static
+	public function setOnBeforeInitForm(callable $onBeforeInitForm)
 	{
 		$this->onBeforeInitForm[] = $onBeforeInitForm;
 		return $this;
 	}
 
-	public function setOnAfterInitForm(callable $onAfterInitForm): static
+	public function setOnAfterInitForm(callable $onAfterInitForm)
 	{
 		$this->onAfterInitForm[] = $onAfterInitForm;
 		return $this;
