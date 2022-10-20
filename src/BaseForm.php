@@ -215,19 +215,19 @@ abstract class BaseForm extends Control
 		return $this;
 	}
 
-	public function setOnBeforeValidateForm(callable $onBeforeValidateForm): static
+	public function setOnBeforeValidateForm(callable $onBeforeValidateForm)
 	{
 		$this->onBeforeValidateForm[] = $onBeforeValidateForm;
 		return $this;
 	}
 
-	public function setOnBeforeProcessForm(callable $onBeforeProcessForm): static
+	public function setOnBeforeProcessForm(callable $onBeforeProcessForm)
 	{
 		$this->onBeforeProcessForm[] = $onBeforeProcessForm;
 		return $this;
 	}
 
-	public function setOnSuccess(callable $onSuccess): static
+	public function setOnSuccess(callable $onSuccess)
 	{
 		$this->onSuccess[] = $onSuccess;
 		return $this;
