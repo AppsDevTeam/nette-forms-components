@@ -187,7 +187,8 @@ class BootstrapFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 				->setAttribute('id', 'snippet-' . $elId . '-errors');
 
 			if ($errors) {
-				$container->addHtml('<script>let el = document.getElementById("' . $elId . '"); el.classList.add("is-invalid"); el.parentElement.classList.contains("input-group") ? el.parentElement.classList.add("is-invalid") : null</script>');
+				$el = 'document.getElementById("' . $elId . '")';
+				$container->addHtml("<script>$el.classList.add('is-invalid'); $el.parentElement.classList.contains('input-group') ? $el.parentElement.classList.add('is-invalid') : null</script>");
 			}
 		}
 
