@@ -136,6 +136,12 @@ class BootstrapFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 				$_container->addHtml($control->getLabelPart($key));
 				$el->addHtml($_container);
 			}
+
+			if ($control instanceof Nette\Forms\Controls\Checkbox) {
+				$_container->addHtml($this->doRenderErrors($control->getErrors(), true, $control->getHtmlId()));
+			} else {
+				$el->addHtml($this->doRenderErrors($control->getErrors(), true, $control->getHtmlId()));
+			}
 		}
 		elseif ($control instanceof PhoneNumberInput) {
 			$el = Html::el('div')
@@ -169,7 +175,6 @@ class BootstrapFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 	{
 		$container = $this->getWrapper($control ? 'control errorcontainer' : 'error container');
 		$item = $this->getWrapper($control ? 'control erroritem' : 'error item');
-
 		foreach ($errors as $error) {
 			$item = clone $item;
 			if ($error instanceof IHtmlString) {
@@ -181,14 +186,27 @@ class BootstrapFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 		}
 
 		if ($elId) {
+			$errorElId = 'snippet-' . $elId . '-errors';
 			// we want to render container for errors even if there are no errors
 			// to be able to redraw it on ajax call
 			$container
-				->setAttribute('id', 'snippet-' . $elId . '-errors');
+				->setAttribute('id', $errorElId);
 
 			if ($errors) {
 				$el = 'document.getElementById("' . $elId . '")';
-				$container->addHtml("<script>$el.classList.add('is-invalid'); $el.parentElement.classList.contains('input-group') ? $el.parentElement.classList.add('is-invalid') : null</script>");
+				$container->addHtml("
+					<script>
+						$el.classList.add('is-invalid'); 
+                        // because of radio lists and checkbox lists
+						if ($el.name.endsWith('[]') || $el.type === 'radio') { 
+                            $el.parentNode.classList.add('is-invalid');
+                        }
+                        // because of https://github.com/twbs/bootstrap/issues/25110
+						if ($el.parentNode.classList.contains('input-group')) {
+							$el.parentNode.classList.add('has-validation');
+						}
+                    </script>
+                ");
 			}
 		}
 
