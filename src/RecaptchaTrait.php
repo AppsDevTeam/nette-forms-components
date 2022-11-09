@@ -20,9 +20,7 @@ trait RecaptchaTrait
 			if ($this->recaptchaConfig->enabled) {
 				$form->addHidden('recaptchaToken');
 
-				$form->getElementPrototype()->setAttribute('data-adt-recaptcha', json_encode([
-					'initOnLoad' => $form->isSubmitted(),
-				]));
+				$form->getElementPrototype()->setAttribute('data-adt-recaptcha', true);
 
 				$form->onValidate[] = function (Form $form) {
 					// if there are any previous errors, validation is unnecessary
