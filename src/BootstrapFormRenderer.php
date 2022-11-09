@@ -196,15 +196,17 @@ class BootstrapFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 				$el = 'document.getElementById("' . $elId . '")';
 				$container->addHtml("
 					<script>
-						$el.classList.add('is-invalid'); 
-                        // because of radio lists and checkbox lists
-						if ($el.name.endsWith('[]') || $el.type === 'radio') { 
-                            $el.parentNode.classList.add('is-invalid');
+						if ($el.tagName !== 'FORM') {
+							$el.classList.add('is-invalid'); 
+							// because of radio lists and checkbox lists
+							if ($el.name.endsWith('[]') || $el.type === 'radio') { 
+								$el.parentNode.classList.add('is-invalid');
+							}
+							// because of https://github.com/twbs/bootstrap/issues/25110
+							if ($el.parentNode.classList.contains('input-group')) {
+								$el.parentNode.classList.add('has-validation');
+							}
                         }
-                        // because of https://github.com/twbs/bootstrap/issues/25110
-						if ($el.parentNode.classList.contains('input-group')) {
-							$el.parentNode.classList.add('has-validation');
-						}
                     </script>
                 ");
 			}
