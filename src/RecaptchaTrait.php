@@ -28,7 +28,7 @@ trait RecaptchaTrait
 						return;
 					}
 
-					$response = json_decode(file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret=" . $this->recaptchaConfig->secretKey . "&response=" . $form->getValues()['recaptchaToken'] . "&remoteip=" . $_SERVER['REMOTE_ADDR']), true);
+					$response = json_decode(file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret=" . $this->recaptchaConfig->secretKey . "&response=" . urlencode($form->getValues()['recaptchaToken']) . "&remoteip=" . $_SERVER['REMOTE_ADDR']), true);
 					if (!$response['success'] || $response['score'] < 0.5) {
 						$form->addError($this->recaptchaConfig->errorMessage);
 						Debugger::log('Recaptcha error: ' . print_r($response, true), 'recaptcha');
