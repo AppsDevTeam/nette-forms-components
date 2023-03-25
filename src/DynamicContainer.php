@@ -129,4 +129,10 @@ class DynamicContainer extends BaseContainer
 			return !$item->isTemplate();
 		});
 	}
+	
+	public function count(): int
+	{
+		// we have to subtract the template container, which is added only if isAllowAdding is true
+		return $this->isAllowAdding() ? count($this->getComponents()) - 1 : count($this->getComponents());
+	}
 }
