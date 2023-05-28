@@ -8,6 +8,7 @@ use Nette\Application\UI\Presenter;
 use Nette\Utils\ArrayHash;
 use Nette\Utils\Callback;
 use Nette\Utils\Reflection;
+use Nette\Utils\Type;
 use ReflectionException;
 
 /**
