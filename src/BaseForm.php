@@ -239,7 +239,9 @@ abstract class BaseForm extends Control
 	 */
 	private function invokeHandler($handler, $formValues = null)
 	{
-		$types = array_map([Reflection::class, 'getParameterType'], Callback::toReflection($handler)->getParameters());
+		$types = array_map(function(\ReflectionParameter $param) {
+			return Type::resolve($param->getType()->getName(), $param);
+		}, Callback::toReflection($handler)->getParameters());
 
 		$params = [];
 		foreach ($types as $_type) {
