@@ -5,15 +5,13 @@ namespace ADT\Forms;
 use Nette;
 use Nette\Application\UI;
 use Nette\Application\UI\Presenter;
-use Closure;
+use Traversable;
 
 class DynamicContainer extends BaseContainer
 {
 	const NEW_PREFIX = '_new_';
 	
 	private StaticContainerFactory $staticContainerFactory;
-	private ?Closure $formMapper = null;
-	private ?Closure $entityMapper = null;
 	private bool $allowAdding = true;
 	private ?StaticContainer $template = null;
 
@@ -21,7 +19,7 @@ class DynamicContainer extends BaseContainer
 	public function __construct()
 	{
 		$this->monitor(Presenter::class, function() {
-			/** @var UI\Form|EntityForm $form */
+			/** @var UI\Form $form */
 			$form = $this->getForm();
 
 			if (!$form->isSubmitted()) {
