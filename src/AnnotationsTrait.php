@@ -17,7 +17,7 @@ use \Closure;
 
 /**
  * @method DateInput addDate($name, $label, $type = 'datetime-local')
- * @method PhoneNumberInput addPhoneNumber($name, $label = null)
+ * @method PhoneNumberInput addPhoneNumber($name, $label, $invalidPhoneNumberMessage)
  * @method EmailStrictInput addEmailStrict($name, $label = null, $errorMessage = 'Invalid email address.')
  * @method CurrencyInput addCurrency($name, $label = null, $currency = null, $language = null)
  * @method StaticContainer addStaticContainer(string $name, Closure $factory, ?string $isFilledComponentName = null, ?string $isRequiredMessage = null)
