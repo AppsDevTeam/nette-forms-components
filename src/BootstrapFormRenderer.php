@@ -82,7 +82,7 @@ class BootstrapFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 			}
 		}
 		if ($prepend) {
-			$prepend = '<div class="input-group-prepend"><span class="input-group-text">' . $prepend . '</span></div>';
+			$prepend = '<span class="input-group-text">' . $prepend . '</span>';
 		}
 
 		$append = $control->getOption('append') ?: '';
@@ -94,7 +94,7 @@ class BootstrapFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 			}
 		}
 		if ($append) {
-			$append = '<div class="input-group-append"><span class="input-group-text">' . $append . '</span></div>';
+			$append = '<span class="input-group-text">' . $append . '</span>';
 		}
 
 		$inputGroupStart = $inputGroupEnd = '';
