@@ -85,7 +85,7 @@ class DynamicContainer extends BaseContainer
 	 * @return static
 	 * @internal
 	 */
-	public function setValues($values, bool $erase = FALSE)
+	public function setValues(object|array $values, bool $erase = FALSE): static
 	{
 		foreach ($values as $name => $value) {
 			if ((is_array($value) || $value instanceof Traversable) && !$this->getComponent($name, FALSE)) {
@@ -123,9 +123,10 @@ class DynamicContainer extends BaseContainer
 	 */
 	public function getContainers()
 	{
-		return new \CallbackFilterIterator($this->getComponents(false, StaticContainer::class), function ($item) {
-			return !$item->isTemplate();
-		});
+        return array_filter(
+            array_filter($this->getComponents(), fn($item) => $item instanceof StaticContainer),
+            fn(StaticContainer $staticContainer) => !$staticContainer->isTemplate()
+        );
 	}
 	
 	public function count(): int
