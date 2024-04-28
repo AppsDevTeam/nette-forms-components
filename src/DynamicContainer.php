@@ -123,10 +123,10 @@ class DynamicContainer extends BaseContainer
 	 */
 	public function getContainers()
 	{
-        return array_filter(
-            array_filter($this->getComponents(), fn($item) => $item instanceof StaticContainer),
-            fn(StaticContainer $staticContainer) => !$staticContainer->isTemplate()
-        );
+	        return array_filter(
+			array_filter($this->getComponents(), fn($item) => $item instanceof StaticContainer),
+			fn(StaticContainer $staticContainer) => !$staticContainer->isTemplate()
+		);
 	}
 	
 	public function count(): int
