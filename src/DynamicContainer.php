@@ -85,7 +85,7 @@ class DynamicContainer extends BaseContainer
 	 * @return static
 	 * @internal
 	 */
-	public function setValues(object|array $values, bool $erase = FALSE): static
+	public function setValues(object|array $values, bool $erase = false, bool $onlyDisabled = false): static
 	{
 		foreach ($values as $name => $value) {
 			if ((is_array($value) || $value instanceof Traversable) && !$this->getComponent($name, FALSE)) {
@@ -93,7 +93,7 @@ class DynamicContainer extends BaseContainer
 			}
 		}
 
-		return parent::setValues($values, $erase);
+		return parent::setValues($values, $erase, $onlyDisabled);
 	}
 
 
