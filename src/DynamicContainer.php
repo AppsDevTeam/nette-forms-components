@@ -123,7 +123,7 @@ class DynamicContainer extends BaseContainer
 	 */
 	public function getContainers()
 	{
-	        return array_filter(
+		return array_filter(
 			array_filter($this->getComponents(), fn($item) => $item instanceof StaticContainer),
 			fn(StaticContainer $staticContainer) => !$staticContainer->isTemplate()
 		);
@@ -131,7 +131,6 @@ class DynamicContainer extends BaseContainer
 	
 	public function count(): int
 	{
-		// we have to subtract the template container, which is added only if isAllowAdding is true
-		return $this->isAllowAdding() ? count($this->getComponents()) - 1 : count($this->getComponents());
+		return count($this->getContainers());
 	}
 }
