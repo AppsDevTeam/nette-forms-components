@@ -98,7 +98,7 @@ abstract class BaseForm extends Control
 			if (!method_exists($this, 'initForm')) {
 				throw new Exception('Please define the "initForm($form)" method.');
 			}
-			$this->initForm($form);
+			$this->invokeHandler([$this, 'initForm']);
 
 			$this->onAfterInitForm($form);
 
