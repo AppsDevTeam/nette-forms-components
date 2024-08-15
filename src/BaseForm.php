@@ -142,6 +142,7 @@ abstract class BaseForm extends Control
 				if (isset($toggles[$label]) && $toggles[$label] === false) {
 					foreach ($_group->getControls() as $_control) {
 						$_control->setValue(null);
+						$_control->setOption('hidden', true);
 					}
 				}
 			}
