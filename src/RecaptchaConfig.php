@@ -6,16 +6,17 @@ class RecaptchaConfig
 {
 	public string $secretKey;
 	public string $errorMessage;
-	public bool $enabled = TRUE;
+	public bool $enabled = true;
 
-	public function __construct(string $secretKey, string $errorMessage)
+	public function __construct(string $secretKey, string $errorMessage, bool $enabled = true)
 	{
 		$this->secretKey = $secretKey;
 		$this->errorMessage = $errorMessage;
-	}
-
-	public function setEnabled(bool $enabled = TRUE): void {
 		$this->enabled = $enabled;
 	}
 
+	public function setEnabled(bool $enabled = true): void 
+	{
+		$this->enabled = $enabled;
+	}
 }
