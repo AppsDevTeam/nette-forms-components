@@ -20,7 +20,11 @@
 			{if $c instanceof \Nette\Forms\Container}
 				{include renderContainer, container => $c}
 			{else}
-				{formPair $c}
+				{if $c instanceof \Nette\Forms\Controls\SubmitButton && !$c->getCaption()}
+					{input $c hidden => true}
+				{else}
+					{formPair $c}
+				{/if}
 			{/if}
 		{/foreach}
 	{/if}
@@ -31,9 +35,17 @@
 		{var $group = $form->getGroup($group)}
 	{/if}
 
-	<div n:tag-if="$group->getOption('label')" n:attr="id => $group->getOption('label'), hidden => $group->getOption('label') && isset ($form->getToggles()[$group->getOption('label')]) && !$form->getToggles()[$group->getOption('label')]">
-		{include renderContainer container => $group}
-	</div>
+	{if str_starts_with((string) $group->getOption('label'), 'snippet-')}
+		{var $snippetName = explode('-', $group->getOption('label'))}
+		{var $snippetName = end($snippetName)}
+		<div n:snippet="$snippetName" n:tag-if="$group->getOption('label')" n:attr="id => $group->getOption('label'), hidden => $group->getOption('label') && isset ($form->getToggles()[$group->getOption('label')]) && !$form->getToggles()[$group->getOption('label')]">
+			{include renderContainer container => $group}
+		</div>
+	{else}
+		<div n:tag-if="$group->getOption('label')" n:attr="id => $group->getOption('label'), hidden => $group->getOption('label') && isset ($form->getToggles()[$group->getOption('label')]) && !$form->getToggles()[$group->getOption('label')]">
+			{include renderContainer container => $group}
+		</div>
+	{/if}
 
 	{php $group->setOption('visual', false)}
 {/define}
