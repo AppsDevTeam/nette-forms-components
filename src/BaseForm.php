@@ -93,6 +93,9 @@ abstract class BaseForm extends Control
 			/** @link BaseForm::processFormCallback() */
 			$form->onSuccess[] = [$this, 'processFormCallback'];
 
+			foreach ($this->onBeforeInitForm as $_callback) {
+				$_callback($form);
+			}
 			$this->onBeforeInitForm($form);
 
 			if (!method_exists($this, 'initForm')) {
@@ -100,6 +103,9 @@ abstract class BaseForm extends Control
 			}
 			$this->invokeHandler([$this, 'initForm']);
 
+			foreach ($this->onAfterInitForm as $_callback) {
+				$_callback($form);
+			}
 			$this->onAfterInitForm($form);
 
 			if ($form->isSubmitted()) {
