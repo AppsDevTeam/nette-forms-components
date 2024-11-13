@@ -96,7 +96,9 @@ abstract class BaseForm extends Control
 			foreach ($this->onBeforeInitForm as $_callback) {
 				$_callback($form);
 			}
-			$this->onBeforeInitForm($form);
+			if (method_exists($this, 'onBeforeInitForm')) {
+				$this->onBeforeInitForm($form);
+			}
 
 			if (!method_exists($this, 'initForm')) {
 				throw new Exception('Please define the "initForm($form)" method.');
@@ -106,7 +108,9 @@ abstract class BaseForm extends Control
 			foreach ($this->onAfterInitForm as $_callback) {
 				$_callback($form);
 			}
-			$this->onAfterInitForm($form);
+			if (method_exists($this, 'onAfterInitForm')) {
+				$this->onAfterInitForm($form);
+			}
 
 			if ($form->isSubmitted()) {
 				if (is_bool($form->isSubmitted()) || $form->isSubmitted()->isDisabled()) {
