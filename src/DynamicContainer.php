@@ -5,6 +5,7 @@ namespace ADT\Forms;
 use Nette;
 use Nette\Application\UI;
 use Nette\Application\UI\Presenter;
+use Nette\Forms\Form;
 use Traversable;
 
 class DynamicContainer extends BaseContainer
@@ -14,7 +15,7 @@ class DynamicContainer extends BaseContainer
 	private StaticContainerFactory $staticContainerFactory;
 	private bool $allowAdding = true;
 	private ?StaticContainer $template = null;
-
+	private int $newCount = 0;
 
 	public function __construct()
 	{
@@ -23,6 +24,16 @@ class DynamicContainer extends BaseContainer
 			$form = $this->getForm();
 
 			if (!$form->isSubmitted()) {
+				$form->onRender = array_merge(
+					[
+						function() {
+							if ($this->isRequired() && !$this->count()) {
+								$this->createNew();
+							}
+						}
+					],
+					$form->onRender
+				);
 				return;
 			}
 
@@ -76,7 +87,7 @@ class DynamicContainer extends BaseContainer
 
 	public function createNew(): StaticContainer
 	{
-		return $this[static::NEW_PREFIX . iterator_count($this->getContainers())];
+		return $this[static::NEW_PREFIX . $this->newCount++];
 	}
 
 	/**
