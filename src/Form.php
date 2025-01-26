@@ -12,7 +12,7 @@ class Form extends \Nette\Application\UI\Form
 
 	private ?BootstrapFormRenderer $renderer = null;
 
-	public function __construct(Nette\ComponentModel\IContainer $parent = null, string $name = null)
+	public function __construct(?Nette\ComponentModel\IContainer $parent = null, ?string $name = null)
 	{
 		parent::__construct($parent, $name);
 
