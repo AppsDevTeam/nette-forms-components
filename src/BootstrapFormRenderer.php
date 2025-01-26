@@ -156,7 +156,7 @@ class BootstrapFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 	/**
 	 * Renders validation errors (per form or per control).
 	 */
-	public function renderErrors(Nette\Forms\Control $control = null, bool $own = true): string
+	public function renderErrors(?Nette\Forms\Control $control = null, bool $own = true): string
 	{
 		$errors = $control
 			? $control->getErrors()
