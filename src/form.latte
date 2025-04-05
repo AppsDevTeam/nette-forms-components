@@ -35,15 +35,24 @@
 		{var $group = $form->getGroup($group)}
 	{/if}
 
+	{var $groupName = (string) $group->getOption('label')}
 	{if str_starts_with((string) $group->getOption('label'), 'snippet-')}
 		{var $snippetName = explode('-', $group->getOption('label'))}
 		{var $snippetName = end($snippetName)}
-		<div n:snippet="$snippetName" n:tag-if="$group->getOption('label')" n:attr="id => $group->getOption('label'), hidden => $group->getOption('label') && isset ($form->getToggles()[$group->getOption('label')]) && !$form->getToggles()[$group->getOption('label')]">
+		<div n:snippet="$snippetName" n:tag-if="$groupName" n:attr="id => $groupName, hidden => $groupName && isset ($form->getToggles()[$groupName]) && !$form->getToggles()[$groupName]">
 			{include renderContainer container => $group}
 		</div>
 	{else}
-		<div n:tag-if="$group->getOption('label')" n:attr="id => $group->getOption('label'), hidden => $group->getOption('label') && isset ($form->getToggles()[$group->getOption('label')]) && !$form->getToggles()[$group->getOption('label')]">
+
+		<div n:tag-if="$groupName" n:attr="id => $groupName, hidden => $groupName && isset ($form->getToggles()[$groupName]) && !$form->getToggles()[$groupName]">
 			{include renderContainer container => $group}
+
+			{foreach $container->getGroups() as $_group}
+				{var $_groupName = (string) $_group->getOption('label')}
+				{if str_starts_with($_groupName, $groupName . '_')}
+					{include renderGroup form => $container, group => $_group}
+				{/if}
+			{/foreach}
 		</div>
 	{/if}
 

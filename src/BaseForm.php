@@ -144,19 +144,7 @@ abstract class BaseForm extends Control
 			return;
 		}
 
-		// empty hidden toggles
-		if ($this->emptyHiddenToggleControls) {
-			$toggles = $form->getToggles();
-			foreach ($form->getGroups() as $_group) {
-				$label = $_group->getOption('label');
-				if (isset($toggles[$label]) && $toggles[$label] === false) {
-					foreach ($_group->getControls() as $_control) {
-						$_control->setValue(null);
-						$_control->setOption('hidden', true);
-					}
-				}
-			}
-		}
+		$this->processToggles($form, emptyValue: true);
 
 		$this->onBeforeProcessForm($form);
 
@@ -284,5 +272,26 @@ abstract class BaseForm extends Control
 	public function getForm()
 	{
 		return $this['form'];
+	}
+
+	protected function processToggles(Form $form, bool $emptyValue)
+	{
+		if ($this->emptyHiddenToggleControls) {
+			$toggles = $form->getToggles();
+			foreach ($form->getGroups() as $_group) {
+				$toggleName = '';
+				foreach (explode('_', (string)$_group->getOption('label')) as $_togglePart) {
+					$toggleName = trim($toggleName . '_' . $_togglePart, '_');
+					if (isset($toggles[$toggleName]) && $toggles[$toggleName] === false) {
+						foreach ($_group->getControls() as $_control) {
+							$_control->setOption('hidden', true);
+							if ($emptyValue) {
+								$_control->setValue(null);
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 }
