@@ -289,10 +289,6 @@ abstract class BaseForm extends Control
 								$_control->setValue(null);
 							}
 						}
-					} else {
-						foreach ($_group->getControls() as $_control) {
-							$_control->setOption('hidden', false);
-						}
 					}
 				}
 			}
