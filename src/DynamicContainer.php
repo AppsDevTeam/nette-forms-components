@@ -78,6 +78,10 @@ class DynamicContainer extends BaseContainer
 
 	public function getTemplate(): StaticContainer
 	{
+		if (!$this->isAllowAdding()) {
+			throw new \Exception('Adding is not allowed.');
+		}
+
 		if (!$this->template) {
 			$this->template = $this[static::NEW_PREFIX]->setIsTemplate(true);
 		}
