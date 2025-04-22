@@ -324,8 +324,9 @@ class BootstrapFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 
 			if (!in_array($type, ['checkbox', 'radio'], true)) {
 				$control->getLabelPrototype()->addClass('form-label');
+			}
 
-			} elseif ($control instanceof SelectBox) {
+			if ($control instanceof SelectBox) {
 				$control->getControlPrototype()->removeClass('form-control')->addClass('form-select');
 			}
 		}
