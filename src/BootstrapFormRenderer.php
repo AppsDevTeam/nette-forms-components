@@ -247,10 +247,13 @@ class BootstrapFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 			foreach ($form->getControls() as $control) {
 				if ($control->getErrors()) {
 					$presenter->payload->snippets['snippet-' . $control->getHtmlId() . '-errors'] = $renderer->renderErrors($control);
+					$presenter->payload->hasErrors = true;
 				}
 			}
 
-			$presenter->sendPayload();
+			if (!$form->getPresenter()->isControlInvalid()) {
+				$presenter->sendPayload();
+			}
 		}
 	}
 
