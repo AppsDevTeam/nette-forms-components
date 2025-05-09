@@ -7,12 +7,11 @@ use Nette\Application\UI\Control;
 use Nette\Application\UI\Presenter;
 use Nette\Utils\ArrayHash;
 use Nette\Utils\Callback;
-use Nette\Utils\Reflection;
 use Nette\Utils\Type;
 use ReflectionException;
+use ReflectionParameter;
 
 /**
- * @property-read Form $form
  * @method onBeforeInitForm($form)
  * @method onAfterInitForm($form)
  * @method onBeforeValidateForm($form)
@@ -21,16 +20,12 @@ use ReflectionException;
  */
 abstract class BaseForm extends Control
 {
-	/** @var Form */
-	protected $form;
+	private Form $form;
 
-	/** @var string|null */
 	public ?string $templateFilename = null;
 
-	/** @var bool */
 	public bool $isAjax = true;
 
-	/** @var bool */
 	public bool $emptyHiddenToggleControls = false;
 
 	/** @var callable[] */
@@ -68,7 +63,7 @@ abstract class BaseForm extends Control
 
 	public function __construct()
 	{
-		$this->paramResolvers[] = function(string $type, $values = null) {
+		$this->paramResolvers[] = function(string $type, object|array|null $values) {
 			if ($type === Form::class || is_subclass_of($type, Form::class)) {
 				return $this->form;
 			} elseif ($type === Presenter::class || is_subclass_of($type, Presenter::class)) {
@@ -114,7 +109,7 @@ abstract class BaseForm extends Control
 
 			if ($form->isSubmitted()) {
 				if (is_bool($form->isSubmitted()) || $form->isSubmitted()->isDisabled()) {
-					$form->setSubmittedBy(null);
+					throw new Exception('The form must be submitted using the specific submit button.');
 				}
 				elseif ($form->isSubmitted()->getValidationScope() !== null) {
 					$form->onValidate = [];
@@ -131,7 +126,7 @@ abstract class BaseForm extends Control
 		$this->onBeforeValidateForm($form);
 
 		if ($form->isValid() && method_exists($this, 'validateForm')) {
-			$this->invokeHandler([$this, 'validateForm'], $form->getUnsafeValues(null));
+			$this->invokeHandler([$this, 'validateForm'], $form->getUntrustedValues());
 		}
 	}
 
@@ -203,31 +198,31 @@ abstract class BaseForm extends Control
 		return call_user_func_array([$this->form->getTranslator(), 'translate'], func_get_args());
 	}
 
-	public function setOnBeforeInitForm(callable $onBeforeInitForm)
+	public function setOnBeforeInitForm(callable $onBeforeInitForm): static
 	{
 		$this->onBeforeInitForm[] = $onBeforeInitForm;
 		return $this;
 	}
 
-	public function setOnAfterInitForm(callable $onAfterInitForm)
+	public function setOnAfterInitForm(callable $onAfterInitForm): static
 	{
 		$this->onAfterInitForm[] = $onAfterInitForm;
 		return $this;
 	}
 
-	public function setOnBeforeValidateForm(callable $onBeforeValidateForm)
+	public function setOnBeforeValidateForm(callable $onBeforeValidateForm): static
 	{
 		$this->onBeforeValidateForm[] = $onBeforeValidateForm;
 		return $this;
 	}
 
-	public function setOnBeforeProcessForm(callable $onBeforeProcessForm)
+	public function setOnBeforeProcessForm(callable $onBeforeProcessForm): static
 	{
 		$this->onBeforeProcessForm[] = $onBeforeProcessForm;
 		return $this;
 	}
 
-	public function setOnSuccess(callable $onSuccess)
+	public function setOnSuccess(callable $onSuccess): static
 	{
 		$this->onSuccess[] = $onSuccess;
 		return $this;
@@ -237,9 +232,9 @@ abstract class BaseForm extends Control
 	 * @throws ReflectionException
 	 * @throws Exception
 	 */
-	private function invokeHandler($handler, $formValues = null)
+	private function invokeHandler(callable $handler, object|array|null $formValues = null): void
 	{
-		$types = array_map(function(\ReflectionParameter $param) {
+		$types = array_map(function(ReflectionParameter $param) {
 			return Type::resolve($param->getType()->getName(), $param);
 		}, Callback::toReflection($handler)->getParameters());
 
@@ -251,7 +246,7 @@ abstract class BaseForm extends Control
 
 			$param = null;
 			foreach ($this->paramResolvers as $_paramResolver) {
-				if (($param = $_paramResolver($_type, $formValues)) !== false) {
+				if (($param = $_paramResolver($_type, $formValues, $handler[1])) !== false) {
 					$params[] = $param;
 					break;
 				}
@@ -265,16 +260,7 @@ abstract class BaseForm extends Control
 		$handler(...$params);
 	}
 
-	/**
-	 * @deprecated Use $this->form instead
-	 * @return Form
-	 */
-	public function getForm()
-	{
-		return $this['form'];
-	}
-
-	protected function processToggles(Form $form, bool $emptyValue)
+	protected function processToggles(Form $form, bool $emptyValue): void
 	{
 		if ($this->emptyHiddenToggleControls) {
 			$toggles = $form->getToggles();
