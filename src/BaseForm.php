@@ -20,7 +20,7 @@ use ReflectionParameter;
  */
 abstract class BaseForm extends Control
 {
-	private Form $form;
+	protected Form $form;
 
 	public ?string $templateFilename = null;
 
