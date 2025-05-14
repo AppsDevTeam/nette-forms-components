@@ -21,12 +21,9 @@ use ReflectionParameter;
 abstract class BaseForm extends Control
 {
 	protected Form $form;
-
-	public ?string $templateFilename = null;
-
-	public bool $isAjax = true;
-
-	public bool $emptyHiddenToggleControls = false;
+	protected ?string $templateFilename = null;
+	protected bool $isAjax = true;
+	protected bool $emptyHiddenToggleControls = true;
 
 	/** @var callable[] */
 	protected array $paramResolvers = [];
@@ -80,7 +77,7 @@ abstract class BaseForm extends Control
 		};
 
 		$this->monitor(Presenter::class, function() {
-			$form = $this->form = $this['form'] = $this->createComponentForm();
+			$form = $this->form = $this['form'];
 
 			/** @link BaseForm::validateFormCallback() */
 			$form->onValidate[] = [$this, 'validateFormCallback'];
@@ -188,7 +185,7 @@ abstract class BaseForm extends Control
 		$this->template->render();
 	}
 
-	protected function createComponentForm(): Form
+	protected function createComponentForm()
 	{
 		return new Form();
 	}
