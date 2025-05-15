@@ -243,7 +243,7 @@ abstract class BaseForm extends Control
 
 			$param = null;
 			foreach ($this->paramResolvers as $_paramResolver) {
-				if (($param = $_paramResolver($_type, $formValues, $handler[1])) !== false) {
+				if (($param = $_paramResolver($_type, $formValues)) !== false) {
 					$params[] = $param;
 					break;
 				}
