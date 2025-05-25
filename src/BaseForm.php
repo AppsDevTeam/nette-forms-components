@@ -21,7 +21,6 @@ use ReflectionParameter;
 abstract class BaseForm extends Control
 {
 	protected Form $form;
-	protected ?string $templateFilename = null;
 	protected bool $isAjax = true;
 	protected bool $emptyHiddenToggleControls = true;
 
@@ -161,8 +160,8 @@ abstract class BaseForm extends Control
 		$this->template->setFile(__DIR__ . DIRECTORY_SEPARATOR . 'form.latte');
 
 		$customTemplatePath = (
-		(!empty($this->templateFilename))
-			? $this->templateFilename
+		(!empty($this->getTemplateFilename()))
+			? $this->getTemplateFilename()
 			: str_replace('.php', '.latte', $this->getReflection()->getFileName())
 		);
 
@@ -276,5 +275,10 @@ abstract class BaseForm extends Control
 				}
 			}
 		}
+	}
+
+	protected function getTemplateFilename(): ?string
+	{
+		return null;
 	}
 }
