@@ -47,7 +47,7 @@
 		<div n:tag-if="$groupName" n:attr="id => $groupName, hidden => $groupName && isset ($form->getToggles()[$groupName]) && !$form->getToggles()[$groupName]">
 			{include renderContainer container => $group}
 
-			{foreach $container->getGroups() as $_group}
+			{foreach $container?->getGroups() ?? [] as $_group}
 				{var $_groupName = (string) $_group->getOption('label')}
 				{if str_starts_with($_groupName, $groupName . '_')}
 					{include renderGroup form => $container, group => $_group}
