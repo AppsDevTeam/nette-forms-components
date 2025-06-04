@@ -228,7 +228,7 @@ abstract class BaseForm extends Control
 	 * @throws ReflectionException
 	 * @throws Exception
 	 */
-	protected function invokeHandler(callable $handler, object|array|null $formValues = null): void
+	protected function invokeHandler(callable $handler, object|array|null $formValues = null)
 	{
 		$types = array_map(function(ReflectionParameter $param) {
 			return Type::resolve($param->getType()->getName(), $param);
@@ -253,7 +253,7 @@ abstract class BaseForm extends Control
 			}
 		}
 
-		$handler(...$params);
+		return $handler(...$params);
 	}
 
 	protected function processToggles(Form $form, bool $emptyValue): void
