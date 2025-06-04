@@ -228,7 +228,7 @@ abstract class BaseForm extends Control
 	 * @throws ReflectionException
 	 * @throws Exception
 	 */
-	private function invokeHandler(callable $handler, object|array|null $formValues = null): void
+	protected function invokeHandler(callable $handler, object|array|null $formValues = null): void
 	{
 		$types = array_map(function(ReflectionParameter $param) {
 			return Type::resolve($param->getType()->getName(), $param);
