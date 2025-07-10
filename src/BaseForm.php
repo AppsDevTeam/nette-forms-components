@@ -7,6 +7,7 @@ use Nette\Application\UI\Control;
 use Nette\Application\UI\Presenter;
 use Nette\Utils\ArrayHash;
 use Nette\Utils\Callback;
+use Nette\Utils\Json;
 use Nette\Utils\Type;
 use ReflectionException;
 use ReflectionParameter;
@@ -68,7 +69,7 @@ abstract class BaseForm extends Control
 				if ($type === ArrayHash::class) {
 					return $values;
 				} elseif ($type === 'array') {
-					return (array) $values;
+					return Json::decode(Json::encode($values), forceArrays: true);
 				}
 			}
 
