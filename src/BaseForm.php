@@ -7,7 +7,6 @@ use Nette\Application\UI\Control;
 use Nette\Application\UI\Presenter;
 use Nette\Utils\ArrayHash;
 use Nette\Utils\Callback;
-use Nette\Utils\Json;
 use Nette\Utils\Type;
 use ReflectionException;
 use ReflectionParameter;
@@ -69,7 +68,7 @@ abstract class BaseForm extends Control
 				if ($type === ArrayHash::class) {
 					return $values;
 				} elseif ($type === 'array') {
-					return Json::decode(Json::encode($values), forceArrays: true);
+					return $this->convertArrayHashToArray($values);
 				}
 			}
 
@@ -281,5 +280,20 @@ abstract class BaseForm extends Control
 	protected function getTemplateFilename(): ?string
 	{
 		return null;
+	}
+
+	protected function convertArrayHashToArray($data)
+	{
+		if ($data instanceof ArrayHash) {
+			$data = (array) $data;
+		}
+
+		if (is_array($data)) {
+			foreach ($data as $key => $value) {
+				$data[$key] = $this->convertArrayHashToArray($value);
+			}
+		}
+
+		return $data;
 	}
 }
