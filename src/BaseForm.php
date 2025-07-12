@@ -119,6 +119,16 @@ abstract class BaseForm extends Control
 	 */
 	final public function validateFormCallback(Form $form): void
 	{
+		// pridal jsem kvuli sobit pokladne, kde jsme meli ajax select a kde nam to na
+		// $validItems = $this->getAjaxEntity()->formatValues($this->getAjaxEntity()->hydrateValues($validValues, $this->getForm()->getValues('array')));
+		// hazelo
+		// Nette\Forms\Container::getValues() invoked but the form is not valid (form 'form')
+		// primarni problem je ten, ze $form->getUntrustedValues() vraci hodnoty jen z inputu
+		// ktere uz jsou vykreslene a tudiz tam jde treba jen pulka hodnot
+		if ($form->isSubmitted()->getValidationScope() !== null) {
+			return;
+		}
+
 		$this->onBeforeValidateForm($form);
 
 		if ($form->isValid() && method_exists($this, 'validateForm')) {
