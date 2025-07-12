@@ -5,6 +5,7 @@ namespace ADT\Forms;
 use Exception;
 use Nette\Application\UI\Control;
 use Nette\Application\UI\Presenter;
+use Nette\Forms\SubmitterControl;
 use Nette\Utils\ArrayHash;
 use Nette\Utils\Callback;
 use Nette\Utils\Type;
@@ -125,7 +126,9 @@ abstract class BaseForm extends Control
 		// Nette\Forms\Container::getValues() invoked but the form is not valid (form 'form')
 		// primarni problem je ten, ze $form->getUntrustedValues() vraci hodnoty jen z inputu
 		// ktere uz jsou vykreslene a tudiz tam jde treba jen pulka hodnot
-		if ($form->isSubmitted()->getValidationScope() !== null) {
+		// aby nemusely byt submit buttony definovane pred tim ajax selectem, tak jeste pridavame
+		// !$form->isSubmitted() instanceof SubmitterControl::class
+		if (!$form->isSubmitted() instanceof SubmitterControl || $form->isSubmitted()->getValidationScope() !== null) {
 			return;
 		}
 
