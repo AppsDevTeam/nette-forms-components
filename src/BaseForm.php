@@ -281,6 +281,9 @@ abstract class BaseForm extends Control
 						foreach ($_group->getControls() as $_control) {
 							$_control->setOption('hidden', true);
 							if ($emptyValue) {
+								if (method_exists($_control, 'setNullable')) {
+									$_control->setNullable(true);
+								}
 								$_control->setValue(null);
 							}
 						}
