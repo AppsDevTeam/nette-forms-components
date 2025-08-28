@@ -39,7 +39,7 @@
 	{if str_starts_with((string) $group->getOption('label'), 'snippet-')}
 		{var $snippetName = explode('-', $group->getOption('label'))}
 		{var $snippetName = end($snippetName)}
-		<div n:snippet="$snippetName" n:tag-if="$groupName" n:attr="id => $groupName, hidden => $groupName && isset ($form->getToggles()[$groupName]) && !$form->getToggles()[$groupName]">
+		<div n:tag-if="$groupName" n:attr="id => $groupName, hidden => $groupName && isset ($form->getToggles()[$groupName]) && !$form->getToggles()[$groupName]" n:snippet="$snippetName">
 			{include renderContainer container => $group}
 		</div>
 	{else}
