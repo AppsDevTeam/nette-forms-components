@@ -106,7 +106,7 @@ abstract class BaseForm extends Control
 
 			if ($form->isSubmitted()) {
 				if (is_bool($form->isSubmitted()) || $form->isSubmitted()->isDisabled()) {
-					throw new Exception('The form must be submitted using the specific submit button.');
+					$form->addError('The form must be submitted using the specific submit button.');
 				}
 				elseif ($form->isSubmitted()->getValidationScope() !== null) {
 					$form->onValidate = [];
