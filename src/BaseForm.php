@@ -21,8 +21,6 @@ use ReflectionParameter;
  */
 abstract class BaseForm extends Control
 {
-	const string ORIGINAL_TEMPLATE = __DIR__ . DIRECTORY_SEPARATOR . 'BaseForm.latte';
-
 	protected Form $form;
 	protected bool $isAjax = true;
 	protected bool $emptyHiddenToggleControls = true;
@@ -172,9 +170,6 @@ abstract class BaseForm extends Control
 	 */
 	public function render(): void
 	{
-		$this->template->originalTemplate = $this->getOriginalTemplate();
-		$this->template->setFile($this->getTemplateFile());
-
 		if ($this->isAjax) {
 			$this->form->getElementPrototype()->class[] = 'ajax';
 		}
@@ -187,7 +182,9 @@ abstract class BaseForm extends Control
 			$this->invokeHandler([$this, 'renderForm']);
 		}
 
-		$this->template->render();
+		$this->getTemplate()->templateFile = $this->getTemplateFile();
+		$this->getTemplate()->setFile(static::getDefaultTemplateFile());
+		$this->getTemplate()->render();
 	}
 
 	protected function createComponentForm()
@@ -286,9 +283,9 @@ abstract class BaseForm extends Control
 		}
 	}
 
-	protected function getTemplateFile(): string
+	protected function getTemplateFile(): ?string
 	{
-		return self::ORIGINAL_TEMPLATE;
+		return null;
 	}
 
 	protected function convertArrayHashToArray($data)
@@ -306,8 +303,8 @@ abstract class BaseForm extends Control
 		return $data;
 	}
 
-	protected function getOriginalTemplate(): string
+	public static function getDefaultTemplateFile(): string
 	{
-		return self::ORIGINAL_TEMPLATE;
+		return __DIR__ . '/BaseForm.latte';
 	}
 }

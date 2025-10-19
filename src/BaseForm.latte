@@ -1,3 +1,7 @@
+{if $templateFile}
+	{import $templateFile}
+{/if}
+
 {varType ADT\Forms\Form $form}
 
 {define errors}
@@ -67,14 +71,20 @@
 	{/ifset}
 {/define}
 
-{snippetArea formArea}
-	{block form}
-		{form form}
-			{include errors}
+{define renderForm}
+	{form form}
+		{include errors}
 
-			{foreach $form->build() as $_el}
-				{include renderEl el => $_el}
-			{/foreach}
-		{/form}
-	{/block}
+		{foreach $form->build() as $_el}
+			{include renderEl el => $_el}
+		{/foreach}
+	{/form}
+{/define}
+
+{snippetArea formArea}
+	{ifset #form}
+		{include #form}
+	{else}
+		{include renderForm}
+	{/ifset}
 {/snippetArea}
