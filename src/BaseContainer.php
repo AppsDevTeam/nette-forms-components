@@ -13,7 +13,7 @@ abstract class BaseContainer extends Container
 	// we have to create an IControl instance and call "addError" on it
 	// the control must not be an instance of "HiddenField"
 	// otherwise the error will be added to the form instead of the container
-	const ERROR_CONTROL_NAME = '_containerError_';
+	const string ERROR_CONTROL_NAME = '_containerError_';
 
 
 	private array $options = [];
@@ -24,7 +24,7 @@ abstract class BaseContainer extends Container
 	 * @param string|null $message
 	 * @return static
 	 */
-	public function setRequired(?string $message)
+	public function setRequired(?string $message): static
 	{
 		$this->requiredMessage = $message;
 		return $this;
@@ -43,7 +43,7 @@ abstract class BaseContainer extends Container
 	}
 
 
-	public function setOption($key, $value)
+	public function setOption($key, $value): static
 	{
 		if ($value === null) {
 			unset($this->options[$key]);
@@ -76,15 +76,21 @@ abstract class BaseContainer extends Container
 	public static function register(): void
 	{
 		Container::extensionMethod('addStaticContainer', function (Container $_this, string $name, Closure $factory, ?string $isFilledComponentName = null, ?string $isRequiredMessage = null) {
-			return $_this[$name] = (new StaticContainerFactory($name, $factory, $isFilledComponentName))
+			$control = (new StaticContainerFactory($name, $factory, $isFilledComponentName))
 				->create()
 				->setRequired($isRequiredMessage);
+			$control->currentGroup = $_this->currentGroup;
+			$_this->currentGroup?->add($control);
+			return $_this[$name] = $control;
 		});
 
 		Container::extensionMethod('addDynamicContainer', function (Container $_this, string $name, Closure $factory, ?string $isFilledComponentName = null, ?string $isRequiredMessage = null) {
-			return $_this[$name] = (new DynamicContainer)
+			$control = (new DynamicContainer)
 				->setStaticContainerFactory(new StaticContainerFactory($name, $factory, $isFilledComponentName))
 				->setRequired($isRequiredMessage);
+			$control->currentGroup = $_this->currentGroup;
+			$_this->currentGroup?->add($control);
+			return $_this[$name] = $control;
 		});
 	}
 }

@@ -5,6 +5,7 @@ namespace ADT\Forms;
 use Closure;
 use Nette\Application\UI\Presenter;
 use Nette\Forms\Controls\BaseControl;
+use Nette\Http\FileUpload;
 
 class StaticContainer extends BaseContainer
 {
@@ -53,16 +54,16 @@ class StaticContainer extends BaseContainer
 	}
 
 
-	public function isEmpty($excludeIsFilledComponent = false): bool
+	public function isEmpty(bool $excludeIsFilledComponent = false): bool
 	{
-		// we don't want to validate the controls, just check if they are empty or not
+		// we don't want to validate the controls, just check if they are empty, or not
 		// getValues causes a loop
-		$values = $this->getUnsafeValues('array');
+		$values = $this->getUntrustedValues('array');
 		if ($excludeIsFilledComponent) {
 			unset($values[$this->getIsFilledComponent()->getName()]);
 		}
 		foreach ($values as &$_value) {
-			if ($_value instanceof Nette\Http\FileUpload && !$_value->isOk()) {
+			if ($_value instanceof FileUpload && !$_value->isOk()) {
 				$_value = null;
 			}
 		}

@@ -21,6 +21,8 @@ use ReflectionParameter;
  */
 abstract class BaseForm extends Control
 {
+	const string ORIGINAL_TEMPLATE = __DIR__ . DIRECTORY_SEPARATOR . 'BaseForm.latte';
+
 	protected Form $form;
 	protected bool $isAjax = true;
 	protected bool $emptyHiddenToggleControls = true;
@@ -170,17 +172,8 @@ abstract class BaseForm extends Control
 	 */
 	public function render(): void
 	{
-		$this->template->setFile(__DIR__ . DIRECTORY_SEPARATOR . 'form.latte');
-
-		$customTemplatePath = (
-		(!empty($this->getTemplateFilename()))
-			? $this->getTemplateFilename()
-			: str_replace('.php', '.latte', $this->getReflection()->getFileName())
-		);
-
-		if (file_exists($customTemplatePath)) {
-			$this->template->customTemplatePath = $customTemplatePath;
-		}
+		$this->template->originalTemplate = $this->getOriginalTemplate();
+		$this->template->setFile($this->getTemplateFile());
 
 		if ($this->isAjax) {
 			$this->form->getElementPrototype()->class[] = 'ajax';
@@ -275,8 +268,8 @@ abstract class BaseForm extends Control
 			$toggles = $form->getToggles();
 			foreach ($form->getGroups() as $_group) {
 				$toggleName = '';
-				foreach (explode('_', (string)$_group->getOption('label')) as $_togglePart) {
-					$toggleName = trim($toggleName . '_' . $_togglePart, '_');
+				foreach (explode(Form::GROUP_LEVEL_SEPARATOR, (string)$_group->getOption('label')) as $_togglePart) {
+					$toggleName = trim($toggleName . Form::GROUP_LEVEL_SEPARATOR . $_togglePart, Form::GROUP_LEVEL_SEPARATOR);
 					if (isset($toggles[$toggleName]) && $toggles[$toggleName] === false) {
 						foreach ($_group->getControls() as $_control) {
 							$_control->setOption('hidden', true);
@@ -293,9 +286,9 @@ abstract class BaseForm extends Control
 		}
 	}
 
-	protected function getTemplateFilename(): ?string
+	protected function getTemplateFile(): string
 	{
-		return null;
+		return self::ORIGINAL_TEMPLATE;
 	}
 
 	protected function convertArrayHashToArray($data)
@@ -311,5 +304,10 @@ abstract class BaseForm extends Control
 		}
 
 		return $data;
+	}
+
+	protected function getOriginalTemplate(): string
+	{
+		return self::ORIGINAL_TEMPLATE;
 	}
 }

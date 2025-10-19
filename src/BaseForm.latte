@@ -1,0 +1,80 @@
+{varType ADT\Forms\Form $form}
+
+{define errors}
+	{$control['form']->getRenderer()->renderErrors()|noescape}
+{/define}
+
+{define renderEl}
+	{if $el['type'] === 'section'}
+		<div {if $el['name']}id="{$el['name']}"{/if}>
+			{if $el['section']->getOption('redrawOnChange')}
+				<div n:snippet="$el['name']">
+					{include renderSection, el => $el}
+				</div>
+			{else}
+				<div>
+					{include renderSection, el => $el}
+				</div>
+			{/if}
+		</div>
+
+		{if $el['section']->getOption('redrawOnChange')}
+			{var $fields = $el['section']->getOption('redrawOnChange')}
+			{var $jsEl = implode(',', array_map(fn($field) => "[name=\"$field\"]", $fields))}
+			{var $elName = '#' . $el['name']}
+			{var $redrawHandler = '[name="' . $el['section']->getOption('redrawHandler') . '"]'}
+			<script>
+				$(document).find({$jsEl}).on('change', function (e) {
+					if ($(document).find({$elName}).is(':visible')) {
+						$(document).find({$redrawHandler}).netteAjax(e);
+					}
+				});
+			</script>
+		{/if}
+	{else}
+		{var $c = $el['component']}
+
+		{var $blockName = 'component-' . $c->getName()}
+		{ifset #$blockName}
+			{include #$blockName, item => $c}
+		{else}
+			{ifset $el['children']}
+				{foreach $el['children'] as $_el}
+					{include renderEl, el => $_el}
+				{/foreach}
+			{else}
+				{if $c instanceof \Nette\Forms\Controls\SubmitButton && !$c->getCaption()}
+					{input $c hidden => true}
+				{else}
+					{formPair $c}
+				{/if}
+			{/ifset}
+		{/ifset}
+	{/if}
+{/define}
+
+{define renderSection}
+	{var $blockName = 'section-' . $el['name']}
+	{ifset #$blockName}
+		{include #$blockName, item => $el}
+	{elseif $el['section']->getOption('blockName')}
+		{var $blockName = $el['section']->getOption('blockName')}
+		{include #$blockName, item => $el}
+	{else}
+		{foreach $el['children'] as $_el}
+			{include renderEl, el => $_el}
+		{/foreach}
+	{/ifset}
+{/define}
+
+{snippetArea formArea}
+	{block form}
+		{form form}
+			{include errors}
+
+			{foreach $form->build() as $_el}
+				{include renderEl el => $_el}
+			{/foreach}
+		{/form}
+	{/block}
+{/snippetArea}

@@ -2,15 +2,22 @@
 
 namespace ADT\Forms;
 
+use Exception;
 use Nette;
 use Nette\Application\UI\Presenter;
+use Nette\Forms\Container;
+use Nette\Forms\ControlGroup;
+use Stringable;
 
-class Form extends \Nette\Application\UI\Form
+class Form extends Nette\Application\UI\Form
 {
 	use AnnotationsTrait;
 	use GetComponentTrait;
 
+	const string GROUP_LEVEL_SEPARATOR = '__';
+
 	private ?BootstrapFormRenderer $renderer = null;
+	private array $nestedGroups = [];
 
 	public function __construct(?Nette\ComponentModel\IContainer $parent = null, ?string $name = null)
 	{
@@ -40,5 +47,216 @@ class Form extends \Nette\Application\UI\Form
 			$message = $this->getTranslator()->translate($message);
 		}
 		parent::addError($message, false);
+	}
+
+	public function build(): array
+	{
+		return $this->processGroups($this, $this->buildComponentGroupMap());
+	}
+
+	/**
+	 * Vytvoří mapu, která přiřazuje komponenty k jejich groupám
+	 */
+	private function buildComponentGroupMap(): array
+	{
+		$map = [];
+
+		foreach ($this->getGroups() as $group) {
+			foreach ($group->getControls() as $control) {
+				$map[spl_object_id($control)] = $group;
+			}
+		}
+
+		return $map;
+	}
+
+	/**
+	 * Zpracuje všechny groupy hierarchicky podle '__'
+	 */
+	private function processGroups($form, array $componentToGroup): array
+	{
+		$allGroups = [];
+		$groupFirstComponent = []; // Sleduje první komponentu každé groupy
+
+		// Sesbíráme všechny groupy a jejich komponenty
+		foreach ($form->getGroups() as $group) {
+			$groupName = $group->getOption('label') ?? '';
+			$items = [];
+
+			foreach ($group->getControls() as $control) {
+				// Přeskočíme hidden fieldy
+				if ($control instanceof Nette\Forms\Controls\HiddenField) {
+					continue;
+				}
+
+				// Zaznamenáme první komponentu groupy pro určení pořadí
+				if (!isset($groupFirstComponent[$groupName])) {
+					$groupFirstComponent[$groupName] = $control;
+				}
+
+				$items[] = [
+					'name' => $control->getName(),
+					'type' => 'input',
+					'component' => $control
+				];
+			}
+
+			if (!empty($items)) {
+				$allGroups[$groupName] = [
+					'name' => $groupName,
+					'type' => 'section',
+					'section' => $group,
+					'children' => $items
+				];
+			}
+		}
+
+		// Vytvoříme hierarchii - vnořené groupy přidáme do parent groups
+		foreach ($allGroups as $groupName => $groupData) {
+			$parentName = $this->getParentGroupName($groupName);
+
+			if ($parentName !== null && isset($allGroups[$parentName])) {
+				// Přidáme tuto groupu do parent groupy
+				$allGroups[$parentName]['children'][] = &$allGroups[$groupName];
+			}
+		}
+
+		// Nyní projdeme všechny komponenty formuláře v původním pořadí
+		// a sestavíme výsledek
+		$result = [];
+		$processedGroups = [];
+
+		foreach ($form->getComponents() as $component) {
+			// Přeskočíme hidden fieldy
+			if ($component instanceof Nette\Forms\Controls\HiddenField) {
+				continue;
+			}
+
+			$group = $componentToGroup[spl_object_id($component)] ?? null;
+
+			if ($group !== null) {
+				$groupName = $group->getOption('label') ?? '';
+
+				// Pokud je to root level group a ještě jsme ji nezpracovali
+				if (!str_contains($groupName, static::GROUP_LEVEL_SEPARATOR) && !isset($processedGroups[$groupName])) {
+					if (isset($allGroups[$groupName])) {
+						$result[] = $allGroups[$groupName];
+						$processedGroups[$groupName] = true;
+					}
+				}
+			} else {
+				// Komponenta bez groupy
+				if ($component instanceof Container) {
+					$children = $this->collectUngroupedComponents($component, $componentToGroup);
+					$result[] = [
+						'name' => $component->getName(),
+						'type' => 'container',
+						'component' => $component,
+						'children' => $children
+					];
+				} else {
+					$result[] = [
+						'name' => $component->getName(),
+						'type' => 'input',
+						'component' => $component
+					];
+				}
+			}
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Sesbírá všechny komponenty bez groupy
+	 */
+	private function collectUngroupedComponents($container, array $componentToGroup): array
+	{
+		$result = [];
+
+		foreach ($container->getComponents() as $component) {
+			// Přeskočíme hidden fieldy
+			if ($component instanceof Nette\Forms\Controls\HiddenField) {
+				continue;
+			}
+
+			$group = $componentToGroup[spl_object_id($component)] ?? null;
+
+			if ($group === null) {
+				if ($component instanceof Container) {
+					$children = $this->collectUngroupedComponents($component, $componentToGroup);
+					$result[] = [
+						'name' => $component->getName(),
+						'type' => 'container',
+						'component' => $component,
+						'children' => $children
+					];
+				} else {
+					$result[] = [
+						'name' => $component->getName(),
+						'type' => 'input',
+						'component' => $component
+					];
+				}
+			}
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Zjistí parent group name z group name
+	 */
+	private function getParentGroupName(string $groupName): ?string
+	{
+		$pos = strrpos($groupName, static::GROUP_LEVEL_SEPARATOR);
+		if ($pos === false) {
+			return null;
+		}
+		return substr($groupName, 0, $pos);
+	}
+
+	public function addGroup(Stringable|string|null $caption = null, bool $setAsCurrent = true): ControlGroup
+	{
+		$this->nestedGroups[] = parent::addGroup($caption, $setAsCurrent);
+		return end($this->nestedGroups);
+	}
+
+	/**
+	 * @throws Exception
+	 */
+	public function addSection(?callable $factory = null, ?string $name = null, ?BlockName $blockName = null, array $redrawOnChange = [], ?callable $onRedraw = null): ControlGroup
+	{
+		if ($redrawOnChange && (!$name || !$onRedraw)) {
+			throw new Exception('Name and onRedraw are required when redrawOnChange is set.');
+		}
+
+		if ($this->getCurrentGroup() !== null) {
+			$name = $this->getCurrentGroup()->getOption('label') . static::GROUP_LEVEL_SEPARATOR . $name;
+		}
+		$group = $this->addGroup($name);
+		$group->setOption('blockName', $blockName?->getName());
+		$group->setOption('redrawOnChange', $redrawOnChange);
+		$factory && $factory();
+		array_pop($this->nestedGroups);
+		$this->setCurrentGroup($this->nestedGroups ? end($this->nestedGroups) : null);
+
+		if ($redrawOnChange) {
+			$redrawHandler = 'redraw' . ucfirst($name);
+			$group->setOption('redrawHandler', $redrawHandler);
+			$this->addSubmit($redrawHandler)
+				->setValidationScope([])
+				->onClick[] = function() use ($onRedraw) {
+					$onRedraw();
+					$this->getParent()->redrawControl($this->getSectionName('price'));
+				};
+		}
+
+		return $group;
+	}
+
+	public function getSectionName(string ...$path): string
+	{
+		return implode(static::GROUP_LEVEL_SEPARATOR, $path);
 	}
 }
