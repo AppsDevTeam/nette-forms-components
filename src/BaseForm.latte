@@ -13,11 +13,11 @@
 		<div {if $el['name']}id="{$el['name']}"{/if}>
 			{if $el['section']->getOption('redrawOnChange')}
 				<div n:snippet="$el['name']">
-					{include renderSection, el => $el}
+					{include renderSection, section => $el}
 				</div>
 			{else}
 				<div>
-					{include renderSection, el => $el}
+					{include renderSection, section => $el}
 				</div>
 			{/if}
 		</div>
@@ -36,21 +36,21 @@
 			</script>
 		{/if}
 	{else}
-		{var $c = $el['component']}
+		{var $component = $el['component']}
 
-		{var $blockName = 'component-' . $c->getName()}
+		{var $blockName = 'component-' . $component->getName()}
 		{ifset #$blockName}
-			{include #$blockName, item => $c}
+			{include #$blockName, component => $component}
 		{else}
 			{ifset $el['children']}
 				{foreach $el['children'] as $_el}
 					{include renderEl, el => $_el}
 				{/foreach}
 			{else}
-				{if $c instanceof \Nette\Forms\Controls\SubmitButton && !$c->getCaption()}
-					{input $c hidden => true}
+				{if $component instanceof \Nette\Forms\Controls\SubmitButton && !$component->getCaption()}
+					{input $component hidden => true}
 				{else}
-					{formPair $c}
+					{formPair $component}
 				{/if}
 			{/ifset}
 		{/ifset}
@@ -58,14 +58,14 @@
 {/define}
 
 {define renderSection}
-	{var $blockName = 'section-' . $el['name']}
+	{var $blockName = 'section-' . $section['name']}
 	{ifset #$blockName}
-		{include #$blockName, item => $el}
-	{elseif $el['section']->getOption('blockName')}
-		{var $blockName = $el['section']->getOption('blockName')}
-		{include #$blockName, item => $el}
+		{include #$blockName, section => $section}
+	{elseif $section['section']->getOption('blockName')}
+		{var $blockName = $section['section']->getOption('blockName')}
+		{include #$blockName, section => $section}
 	{else}
-		{foreach $el['children'] as $_el}
+		{foreach $section['children'] as $_el}
 			{include renderEl, el => $_el}
 		{/foreach}
 	{/ifset}
