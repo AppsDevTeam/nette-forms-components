@@ -76,12 +76,13 @@ class Form extends Nette\Application\UI\Form
 	private function processGroups($form, array $componentToGroup): array
 	{
 		$allGroups = [];
-		$groupFirstComponent = []; // Sleduje první komponentu každé groupy
+		$processedContainersGlobal = []; // Globální sledování zpracovaných kontejnerů
 
 		// Sesbíráme všechny groupy a jejich komponenty
 		foreach ($form->getGroups() as $group) {
 			$groupName = $group->getOption('label') ?? '';
 			$items = [];
+			$processedContainers = []; // Sledujeme již zpracované kontejnery v této groupě
 
 			foreach ($group->getControls() as $control) {
 				// Přeskočíme hidden fieldy
@@ -89,16 +90,36 @@ class Form extends Nette\Application\UI\Form
 					continue;
 				}
 
-				// Zaznamenáme první komponentu groupy pro určení pořadí
-				if (!isset($groupFirstComponent[$groupName])) {
-					$groupFirstComponent[$groupName] = $control;
-				}
+				$parent = $control->getParent();
 
-				$items[] = [
-					'name' => $control->getName(),
-					'type' => 'input',
-					'component' => $control
-				];
+				// Pokud je komponenta přímo ve formuláři
+				if ($parent === $form) {
+					$items[] = [
+						'name' => $control->getName(),
+						'type' => 'input',
+						'component' => $control
+					];
+				} else {
+					// Komponenta je v nějakém kontejneru - najdeme top-level kontejner
+					$topContainer = $parent;
+					while ($topContainer->getParent() !== $form) {
+						$topContainer = $topContainer->getParent();
+					}
+
+					// Přidáme kontejner jen jednou
+					$containerId = spl_object_id($topContainer);
+					if (!isset($processedContainers[$containerId])) {
+						$children = $this->collectAllComponents($topContainer, $componentToGroup);
+						$items[] = [
+							'name' => $topContainer->getName(),
+							'type' => 'container',
+							'component' => $topContainer,
+							'children' => $children
+						];
+						$processedContainers[$containerId] = true;
+						$processedContainersGlobal[$containerId] = true; // Označíme globálně
+					}
+				}
 			}
 
 			if (!empty($items)) {
@@ -147,13 +168,17 @@ class Form extends Nette\Application\UI\Form
 			} else {
 				// Komponenta bez groupy
 				if ($component instanceof Container) {
-					$children = $this->collectUngroupedComponents($component, $componentToGroup);
-					$result[] = [
-						'name' => $component->getName(),
-						'type' => 'container',
-						'component' => $component,
-						'children' => $children
-					];
+					// Kontrola, zda jsme tento kontejner už nezpracovali v nějaké groupě
+					$containerId = spl_object_id($component);
+					if (!isset($processedContainersGlobal[$containerId])) {
+						$children = $this->collectAllComponents($component, $componentToGroup);
+						$result[] = [
+							'name' => $component->getName(),
+							'type' => 'container',
+							'component' => $component,
+							'children' => $children
+						];
+					}
 				} else {
 					$result[] = [
 						'name' => $component->getName(),
@@ -168,9 +193,9 @@ class Form extends Nette\Application\UI\Form
 	}
 
 	/**
-	 * Sesbírá všechny komponenty bez groupy
+	 * Sesbírá VŠECHNY komponenty z kontejneru (rekurzivně)
 	 */
-	private function collectUngroupedComponents($container, array $componentToGroup): array
+	private function collectAllComponents($container, array $componentToGroup): array
 	{
 		$result = [];
 
@@ -180,24 +205,20 @@ class Form extends Nette\Application\UI\Form
 				continue;
 			}
 
-			$group = $componentToGroup[spl_object_id($component)] ?? null;
-
-			if ($group === null) {
-				if ($component instanceof Container) {
-					$children = $this->collectUngroupedComponents($component, $componentToGroup);
-					$result[] = [
-						'name' => $component->getName(),
-						'type' => 'container',
-						'component' => $component,
-						'children' => $children
-					];
-				} else {
-					$result[] = [
-						'name' => $component->getName(),
-						'type' => 'input',
-						'component' => $component
-					];
-				}
+			if ($component instanceof Container) {
+				$children = $this->collectAllComponents($component, $componentToGroup);
+				$result[] = [
+					'name' => $component->getName(),
+					'type' => 'container',
+					'component' => $component,
+					'children' => $children
+				];
+			} else {
+				$result[] = [
+					'name' => $component->getName(),
+					'type' => 'input',
+					'component' => $component
+				];
 			}
 		}
 
