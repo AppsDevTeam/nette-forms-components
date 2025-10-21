@@ -10,6 +10,7 @@ use Nette\Http\FileUpload;
 class StaticContainer extends BaseContainer
 {
 	use GetComponentTrait;
+	use SectionTrait;
 
 	private ?BaseControl $isFilledComponent = null;
 	private bool $isTemplate = false;

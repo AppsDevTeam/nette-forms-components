@@ -11,30 +11,32 @@
 {define renderEl}
 	{if $el['type'] === 'section'}
 		<div {if $el['name']}id="{$el['name']}"{/if}>
-			{if $el['section']->getOption('redrawOnChange')}
-				<div n:snippet="$el['name']">
+			{if $el['section']->getOption('redrawHandler')}
+				<div n:snippet="$el['section']->getOption('htmlId')">
 					{include renderSection, section => $el}
 				</div>
+
+				{include renderInput input => $el['section']->getOption('redrawHandler')}
+
+				{var $fields = $el['section']->getOption('watchForRedraw')}
+				{var $jsEl = implode(',', array_map(fn($field) => "[name=\"$field\"],[name$=\"[$field]\"]", $fields))}
+				{var $elName = '#' . $el['name']}
+				{var $redrawHandler = '[name="' . $el['section']->getOption('redrawHandler')->getName() . '"],[name$="[' . $el['section']->getOption('redrawHandler')->getName() . ']"]'}
+				<script>
+					var sendNetteAjax = function (e) {
+						if ($({$elName}).is(':visible')) {
+							$(document).find({$redrawHandler}).netteAjax(e);
+						}
+					};
+					$(document).find({$jsEl}).filter('button, input[type="button"], input[type="submit"]').on('click', sendNetteAjax);
+					$(document).find({$jsEl}).filter('input:not([type="button"]):not([type="submit"]), select, textarea').on('change', sendNetteAjax);
+				</script>
 			{else}
 				<div>
 					{include renderSection, section => $el}
 				</div>
 			{/if}
 		</div>
-
-		{if $el['section']->getOption('redrawOnChange')}
-			{var $fields = $el['section']->getOption('redrawOnChange')}
-			{var $jsEl = implode(',', array_map(fn($field) => "[name=\"$field\"]", $fields))}
-			{var $elName = '#' . $el['name']}
-			{var $redrawHandler = '[name="' . $el['section']->getOption('redrawHandler') . '"]'}
-			<script>
-				$(document).find({$jsEl}).on('change', function (e) {
-					if ($(document).find({$elName}).is(':visible')) {
-						$(document).find({$redrawHandler}).netteAjax(e);
-					}
-				});
-			</script>
-		{/if}
 	{else}
 		{var $component = $el['component']}
 
@@ -47,11 +49,7 @@
 					{include renderEl, el => $_el}
 				{/foreach}
 			{else}
-				{if $component instanceof \Nette\Forms\Controls\SubmitButton && !$component->getCaption()}
-					{input $component hidden => true}
-				{else}
-					{formPair $component}
-				{/if}
+				{include renderInput, input => $component}
 			{/ifset}
 		{/ifset}
 	{/if}
@@ -71,11 +69,19 @@
 	{/ifset}
 {/define}
 
+{define renderInput}
+	{if $input instanceof \Nette\Forms\Controls\SubmitButton && !$input->getCaption()}
+		{input $input hidden => true}
+	{else}
+		{formPair $input}
+	{/if}
+{/define}
+
 {define renderForm}
 	{form form}
 		{include errors}
 
-		{foreach $form->build() as $_el}
+		{foreach $form->getStructure() as $_el}
 			{include renderEl el => $_el}
 		{/foreach}
 	{/form}
