@@ -170,7 +170,21 @@ class Form extends Nette\Application\UI\Form
 				if ($component instanceof Container) {
 					// Kontrola, zda jsme tento kontejner už nezpracovali v nějaké groupě
 					$containerId = spl_object_id($component);
-					if (!isset($processedContainersGlobal[$containerId])) {
+
+					// Zkontrolujeme, jestli děti tohoto kontejneru nemají nějakou groupu
+					$childGroup = $this->getContainerChildGroup($component, $componentToGroup);
+
+					if ($childGroup !== null) {
+						// Děti mají groupu - zkontrolujeme, jestli už byla přidána
+						$childGroupName = $childGroup->getOption('label') ?? '';
+						if (!str_contains($childGroupName, static::GROUP_LEVEL_SEPARATOR) &&
+							!isset($processedGroups[$childGroupName]) &&
+							isset($allGroups[$childGroupName])) {
+							$result[] = $allGroups[$childGroupName];
+							$processedGroups[$childGroupName] = true;
+						}
+					} elseif (!isset($processedContainersGlobal[$containerId])) {
+						// Kontejner ani jeho děti nemají groupu - přidáme ho normálně
 						$children = $this->collectAllComponents($component, $componentToGroup);
 						$result[] = [
 							'name' => $component->getName(),
@@ -190,6 +204,29 @@ class Form extends Nette\Application\UI\Form
 		}
 
 		return $result;
+	}
+
+	/**
+	 * Zjistí, jestli děti kontejneru mají nějakou groupu
+	 */
+	private function getContainerChildGroup($container, array $componentToGroup): ?ControlGroup
+	{
+		foreach ($container->getComponents() as $component) {
+			$group = $componentToGroup[spl_object_id($component)] ?? null;
+			if ($group !== null) {
+				return $group;
+			}
+
+			// Rekurzivně zkontrolujeme vnořené kontejnery
+			if ($component instanceof Container) {
+				$childGroup = $this->getContainerChildGroup($component, $componentToGroup);
+				if ($childGroup !== null) {
+					return $childGroup;
+				}
+			}
+		}
+
+		return null;
 	}
 
 	/**
@@ -246,10 +283,10 @@ class Form extends Nette\Application\UI\Form
 	/**
 	 * @throws Exception
 	 */
-	public function addSection(?callable $factory = null, ?string $name = null, ?BlockName $blockName = null, array $redrawOnChange = [], ?callable $onRedraw = null): ControlGroup
+	public function addSection(?callable $factory = null, ?string $name = null, ?BlockName $blockName = null, array $watchForRedraw = [], ?callable $onRedraw = null, array $validationScope = []): ControlGroup
 	{
-		if ($redrawOnChange && (!$name || !$onRedraw)) {
-			throw new Exception('Name and onRedraw are required when redrawOnChange is set.');
+		if ($onRedraw && !$name) {
+			throw new Exception('Name is required when onRedraw is set.');
 		}
 
 		if ($this->getCurrentGroup() !== null) {
@@ -257,19 +294,19 @@ class Form extends Nette\Application\UI\Form
 		}
 		$group = $this->addGroup($name);
 		$group->setOption('blockName', $blockName?->getName());
-		$group->setOption('redrawOnChange', $redrawOnChange);
+		$group->setOption('watchForRedraw', $watchForRedraw);
 		$factory && $factory();
 		array_pop($this->nestedGroups);
 		$this->setCurrentGroup($this->nestedGroups ? end($this->nestedGroups) : null);
 
-		if ($redrawOnChange) {
+		if ($onRedraw) {
 			$redrawHandler = 'redraw' . ucfirst($name);
 			$group->setOption('redrawHandler', $redrawHandler);
 			$this->addSubmit($redrawHandler)
-				->setValidationScope([])
-				->onClick[] = function() use ($onRedraw) {
+				->setValidationScope($validationScope)
+				->onClick[] = function() use ($onRedraw, $name) {
 					$onRedraw();
-					$this->getParent()->redrawControl($this->getSectionName('price'));
+					$this->getParent()->redrawControl($name);
 				};
 		}
 
