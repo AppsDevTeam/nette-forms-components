@@ -22,7 +22,7 @@ trait SectionTrait
 	 */
 	public function addSection(?callable $factory = null, ?string $name = null, ?BlockName $blockName = null, array $watchForRedraw = [], ?callable $onRedraw = null, array $validationScope = []): ControlGroup
 	{
-		if ($onRedraw && !$name) {
+		if (($watchForRedraw || $onRedraw) && !$name) {
 			throw new Exception('Name is required when onRedraw is set.');
 		}
 
@@ -45,13 +45,13 @@ trait SectionTrait
 		array_pop($this->nestedGroups);
 		$this->setCurrentGroup($this->nestedGroups ? end($this->nestedGroups) : null);
 
-		if ($onRedraw) {
+		if ($watchForRedraw || $onRedraw) {
 			$redrawHandlerName = 'redraw' . ucfirst($name);
 			$redrawHandler = $this->addSubmit($redrawHandlerName)
 				->setOption('redrawHandler', true)
 				->setValidationScope($validationScope);
 			$redrawHandler->onClick[] = function() use ($onRedraw, $prefixedName) {
-				$onRedraw();
+				$onRedraw && $onRedraw();
 				$this->getForm()->getParent()->redrawControl($prefixedName);
 			};
 			$group->setOption('redrawHandler', $redrawHandler);

@@ -42,7 +42,7 @@
 {/define}
 
 {define renderSection}
-	{var $blockName = 'section-' . $section['name']}
+	{var $blockName = 'section-' . str_replace('__', '-', $section['name'])}
 	{ifset #$blockName}
 		{include #$blockName, section => $section}
 	{elseif $section['section']->getOption('blockName')}
