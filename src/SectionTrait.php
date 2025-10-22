@@ -13,7 +13,7 @@ trait SectionTrait
 	protected ?array $structure = null;
 	protected array $groups = [];
 	protected array $nestedGroups = [];
-	
+
 	/**
 	 * @throws Exception
 	 */
@@ -63,7 +63,7 @@ trait SectionTrait
 	 */
 	public function addGroup(string|\Stringable|null $caption = null, bool $setAsCurrent = true): ControlGroup
 	{
-		$group = new ControlGroup;
+		$this->nestedGroups[] = $group = new ControlGroup;
 		$group->setOption('label', $caption);
 		$group->setOption('visual', true);
 
