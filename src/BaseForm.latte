@@ -56,7 +56,7 @@
 {/define}
 
 {define renderInput}
-	{if $input instanceof \Nette\Forms\Controls\SubmitButton && !$input->getCaption()}
+	{if $input instanceof \Nette\Forms\Controls\SubmitButton && !$input->getCaption() || $input instanceof Nette\Forms\Controls\HiddenField}
 		{input $input hidden => true}
 	{else}
 		{formPair $input}

@@ -31,11 +31,11 @@ trait SectionTrait
 		}
 
 		$lastComponent = $this->getForm()->getComponents();
-		$lastComponent = end($lastComponent);
-		$inserAfter = $this->lastSection?->getOption('insertAfter') !== $lastComponent && $this->getComponentGroup($lastComponent) === $this->getCurrentGroup() ? $lastComponent : $this->lastSection;
+		$lastComponent = end($lastComponent) ?: null;
+		$insertAfter = $this->lastSection?->getOption('insertAfter') !== $lastComponent && $this->getComponentGroup($lastComponent) === $this->getCurrentGroup() ? $lastComponent : $this->lastSection;
 
 		$group = $this->addGroup($name);
-		$group->setOption('insertAfter', $inserAfter);
+		$group->setOption('insertAfter', $insertAfter);
 		$prefixedName = $this instanceof Form ? $name : $this->getName() .'-' . $name;
 		$group->setOption('blockName', $blockName?->getName());
 		$group->setOption('watchForRedraw', $watchForRedraw);
@@ -159,7 +159,14 @@ trait SectionTrait
 
 			foreach ($group->getControls() as $control) {
 				// Přeskočíme hidden fieldy a komponenty s redrawHandler
-				if ($control instanceof HiddenField || $control->getOption('redrawHandler') === true) {
+				if ($control->getOption('redrawHandler') === true) {
+					continue;
+				}
+
+				// Zjistíme, jestli control patří do nested groupy této groupy
+				$controlGroup = $componentToGroup[spl_object_id($control)] ?? null;
+				if ($controlGroup && $controlGroup !== $group) {
+					// Control patří do jiné groupy (nested), přeskočíme
 					continue;
 				}
 
@@ -209,33 +216,65 @@ trait SectionTrait
 			}
 		}
 
-		// Vytvoříme hierarchii - vnořené groupy vložíme do parent groups na správná místa
+		// Vytvoříme hierarchii - vnořené groupy přidáme do parent groups
+		// Seřadíme groupy podle počtu '__' (level)
+		$groupsByLevel = [];
 		foreach ($allGroups as $groupName => $groupData) {
-			$parentName = $this->getParentGroupName($groupName);
+			$level = substr_count($groupName, static::GROUP_LEVEL_SEPARATOR);
+			$groupsByLevel[$level][] = $groupName;
+		}
+		ksort($groupsByLevel);
 
-			if ($parentName !== null && isset($allGroups[$parentName])) {
-				// Vložíme nested groupu na správné místo podle insertAfter
-				$this->insertItemAtCorrectPosition(
-					$allGroups[$parentName]['children'],
-					$groupData,
-					$groupData['section']->getOption('insertAfter')
-				);
+		// Zpracujeme OD NEJVYŠŠÍHO LEVELU DOLŮ (aby nested měly své children než se přidají do parenta)
+		if (!empty($groupsByLevel)) {
+			$maxLevel = max(array_keys($groupsByLevel));
+
+			for ($level = $maxLevel; $level >= 1; $level--) { // ZMĚNA: Od max dolů
+				if (!isset($groupsByLevel[$level])) continue;
+
+				foreach ($groupsByLevel[$level] as $groupName) {
+					$parentName = $this->getParentGroupName($groupName);
+
+					if ($parentName !== null && isset($allGroups[$parentName])) {
+						// Vložíme nested groupu na správné místo podle insertAfter
+						$this->insertItemAtCorrectPosition(
+							$allGroups[$parentName]['children'],
+							$allGroups[$groupName], // Bereme aktuální data
+							$allGroups[$groupName]['section']->getOption('insertAfter')
+						);
+					}
+				}
+			}
+		}
+
+		// Inicializujeme result a processedGroups
+		$result = [];
+		$processedGroups = [];
+
+		// Přidáme prázdné root groupy, které mají insertAfter === null (jsou první)
+		foreach ($allGroups as $groupName => $groupData) {
+			if (str_contains($groupName, static::GROUP_LEVEL_SEPARATOR)) {
+				continue;
+			}
+
+			$insertAfter = $groupData['section']->getOption('insertAfter');
+
+			if ($insertAfter === null) {
+				$result[] = $allGroups[$groupName];
+				$processedGroups[$groupName] = true;
 			}
 		}
 
 		// Připravíme seznam komponent bez hidden/redraw
 		$componentsList = [];
 		foreach ($this->getComponents() as $component) {
-			if ($component instanceof HiddenField || $component->getOption('redrawHandler') === true) {
+			if ($component->getOption('redrawHandler') === true) {
 				continue;
 			}
 			$componentsList[] = $component;
 		}
 
 		// Projdeme komponenty kontejneru v původním pořadí
-		$result = [];
-		$processedGroups = [];
-
 		foreach ($componentsList as $component) {
 			// Nejdřív zkontrolujeme, jestli před touto komponentou nemáme přidat prázdnou root groupu
 			foreach ($allGroups as $groupName => $groupData) {
@@ -262,7 +301,7 @@ trait SectionTrait
 						}
 
 						if ($shouldInsert) {
-							$result[] = $groupData;
+							$result[] = $allGroups[$groupName];
 							$processedGroups[$groupName] = true;
 						}
 					}
@@ -318,7 +357,7 @@ trait SectionTrait
 		// Přidáme zbylé root level groupy, které nebyly zpracované
 		foreach ($allGroups as $groupName => $groupData) {
 			if (!str_contains($groupName, static::GROUP_LEVEL_SEPARATOR) && !isset($processedGroups[$groupName])) {
-				$result[] = $groupData;
+				$result[] = $allGroups[$groupName];
 			}
 		}
 
@@ -331,8 +370,8 @@ trait SectionTrait
 	private function insertItemAtCorrectPosition(array &$children, array $newItem, $insertAfter): void
 	{
 		if ($insertAfter === null) {
-			// Přidej na konec
-			$children[] = $newItem;
+			// Přidej na začátek (je to první section)
+			array_unshift($children, $newItem);
 			return;
 		}
 
@@ -413,7 +452,7 @@ trait SectionTrait
 
 		foreach ($container->getComponents() as $component) {
 			// Přeskočíme hidden fieldy a komponenty s redrawHandler
-			if ($component instanceof HiddenField || $component->getOption('redrawHandler') === true) {
+			if ($component->getOption('redrawHandler') === true) {
 				continue;
 			}
 
