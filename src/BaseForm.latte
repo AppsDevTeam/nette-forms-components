@@ -11,26 +11,12 @@
 {define renderEl}
 	{if $el['type'] === 'section'}
 		<div {if $el['name']}id="{$el['name']}"{/if}>
-			{if $el['section']->getOption('redrawHandler')}
+			{if $el['section']->getOption('redrawHandler') && (!$control->isControlInvalid() || $control->isControlInvalid($el['section']->getOption('htmlId')))}
 				<div n:snippet="$el['section']->getOption('htmlId')">
 					{include renderSection, section => $el}
 				</div>
 
 				{include renderInput input => $el['section']->getOption('redrawHandler')}
-
-				{var $fields = $el['section']->getOption('watchForRedraw')}
-				{var $jsEl = implode(',', array_map(fn($field) => "[name=\"$field\"],[name$=\"[$field]\"]", $fields))}
-				{var $elName = '#' . $el['name']}
-				{var $redrawHandler = '[name="' . $el['section']->getOption('redrawHandler')->getName() . '"],[name$="[' . $el['section']->getOption('redrawHandler')->getName() . ']"]'}
-				<script>
-					var sendNetteAjax = function (e) {
-						if ($({$elName}).is(':visible')) {
-							$(document).find({$redrawHandler}).netteAjax(e);
-						}
-					};
-					$(document).find({$jsEl}).filter('button, input[type="button"], input[type="submit"]').on('click', sendNetteAjax);
-					$(document).find({$jsEl}).filter('input:not([type="button"]):not([type="submit"]), select, textarea').on('change', sendNetteAjax);
-				</script>
 			{else}
 				<div>
 					{include renderSection, section => $el}

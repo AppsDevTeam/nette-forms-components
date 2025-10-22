@@ -174,10 +174,6 @@ abstract class BaseForm extends Control
 			$this->form->getElementPrototype()->class[] = 'ajax';
 		}
 
-		if ($this->presenter->isAjax()) {
-			$this->redrawControl('formArea');
-		}
-
 		if (method_exists($this, 'renderForm')) {
 			$this->invokeHandler([$this, 'renderForm']);
 		}
@@ -306,5 +302,11 @@ abstract class BaseForm extends Control
 	public static function getDefaultTemplateFile(): string
 	{
 		return __DIR__ . '/BaseForm.latte';
+	}
+
+	public function redrawControl(?string $snippet = null, bool $redraw = true): void
+	{
+		parent::redrawControl('formArea');
+		parent::redrawControl($snippet, $redraw);
 	}
 }

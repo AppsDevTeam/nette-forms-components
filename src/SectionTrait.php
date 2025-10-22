@@ -27,9 +27,10 @@ trait SectionTrait
 			$name = $this->getCurrentGroup()->getOption('label') . static::GROUP_LEVEL_SEPARATOR . $name;
 		}
 		$group = $this->addGroup($name);
+		$prefixedName = $this instanceof Form ? $name : $this->getName() .'-' . $name;
 		$group->setOption('blockName', $blockName?->getName());
 		$group->setOption('watchForRedraw', $watchForRedraw);
-		$group->setOption('htmlId', ($this instanceof Form ? $name : $this->getName() .'-' . $name));
+		$group->setOption('htmlId', $prefixedName);
 		$factory && $factory();
 		array_pop($this->nestedGroups);
 		$this->setCurrentGroup($this->nestedGroups ? end($this->nestedGroups) : null);
@@ -37,12 +38,16 @@ trait SectionTrait
 		if ($onRedraw) {
 			$redrawHandlerName = 'redraw' . ucfirst($name);
 			$redrawHandler = $this->addSubmit($redrawHandlerName)
+				->setOption('redrawHandler', true)
 				->setValidationScope($validationScope);
-			$redrawHandler->onClick[] = function() use ($onRedraw) {
+			$redrawHandler->onClick[] = function() use ($onRedraw, $prefixedName) {
 				$onRedraw();
-				$this->getForm()->getParent()->redrawControl($this->getSectionName('price'));
+				$this->getForm()->getParent()->redrawControl($prefixedName);
 			};
 			$group->setOption('redrawHandler', $redrawHandler);
+			foreach ($watchForRedraw as $_name) {
+				$this[$_name]->setHtmlAttribute('data-adt-redraw-snippet', $redrawHandler->getHtmlName());
+			}
 		}
 
 		return $group;
@@ -122,8 +127,8 @@ trait SectionTrait
 			$processedContainers = [];
 
 			foreach ($group->getControls() as $control) {
-				// Přeskočíme hidden fieldy
-				if ($control instanceof Nette\Forms\Controls\HiddenField) {
+				// Přeskočíme hidden fieldy a komponenty s redrawHandler
+				if ($control instanceof Nette\Forms\Controls\HiddenField || $control->getOption('redrawHandler') === true) {
 					continue;
 				}
 
@@ -178,7 +183,6 @@ trait SectionTrait
 			$parentName = $this->getParentGroupName($groupName);
 
 			if ($parentName !== null && isset($allGroups[$parentName])) {
-				// ZMĚNA: Použij groupName jako klíč
 				$allGroups[$parentName]['children'][$groupName] = &$allGroups[$groupName];
 			}
 		}
@@ -188,8 +192,8 @@ trait SectionTrait
 		$processedGroups = [];
 
 		foreach ($this->getComponents() as $component) {
-			// Přeskočíme hidden fieldy
-			if ($component instanceof Nette\Forms\Controls\HiddenField) {
+			// Přeskočíme hidden fieldy a komponenty s redrawHandler
+			if ($component instanceof Nette\Forms\Controls\HiddenField || $component->getOption('redrawHandler') === true) {
 				continue;
 			}
 
@@ -201,7 +205,6 @@ trait SectionTrait
 				// Pokud je to root level group (pro tento kontejner) a ještě jsme ji nezpracovali
 				if (!str_contains($groupName, static::GROUP_LEVEL_SEPARATOR) && !isset($processedGroups[$groupName])) {
 					if (isset($allGroups[$groupName])) {
-						// ZMĚNA: Použij groupName jako klíč
 						$result[$groupName] = $allGroups[$groupName];
 						$processedGroups[$groupName] = true;
 					}
@@ -218,7 +221,6 @@ trait SectionTrait
 						if (!str_contains($childGroupName, static::GROUP_LEVEL_SEPARATOR) &&
 							!isset($processedGroups[$childGroupName]) &&
 							isset($allGroups[$childGroupName])) {
-							// ZMĚNA: Použij childGroupName jako klíč
 							$result[$childGroupName] = $allGroups[$childGroupName];
 							$processedGroups[$childGroupName] = true;
 						}
@@ -291,7 +293,8 @@ trait SectionTrait
 		$result = [];
 
 		foreach ($container->getComponents() as $component) {
-			if ($component instanceof Nette\Forms\Controls\HiddenField) {
+			// Přeskočíme hidden fieldy a komponenty s redrawHandler
+			if ($component instanceof Nette\Forms\Controls\HiddenField || $component->getOption('redrawHandler') === true) {
 				continue;
 			}
 
