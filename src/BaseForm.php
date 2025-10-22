@@ -281,6 +281,14 @@ abstract class BaseForm extends Control
 
 	protected function getTemplateFile(): ?string
 	{
+		$reflectionClass = new \ReflectionClass($this);
+		$templateName = $reflectionClass->getShortName() .'.latte';
+
+		$templateFile = dirname($reflectionClass->getFileName()) . '/' . $templateName;
+		if (file_exists($templateFile)) {
+			return $templateFile;
+		}
+
 		return null;
 	}
 

@@ -2,9 +2,11 @@
 
 namespace ADT\Forms;
 
-use Nette\Application\UI\Presenter;
+use Exception;
 use Nette\Forms\Container;
 use Nette\Forms\ControlGroup;
+use Nette\Forms\Controls\HiddenField;
+use Stringable;
 
 trait SectionTrait
 {
@@ -13,6 +15,7 @@ trait SectionTrait
 	protected ?array $structure = null;
 	protected array $groups = [];
 	protected array $nestedGroups = [];
+	protected ?ControlGroup $lastSection = null;
 
 	/**
 	 * @throws Exception
@@ -26,12 +29,19 @@ trait SectionTrait
 		if ($this->getCurrentGroup() !== null) {
 			$name = $this->getCurrentGroup()->getOption('label') . static::GROUP_LEVEL_SEPARATOR . $name;
 		}
+
+		$lastComponent = $this->getForm()->getComponents();
+		$lastComponent = end($lastComponent);
+		$inserAfter = $this->lastSection?->getOption('insertAfter') !== $lastComponent && $this->getComponentGroup($lastComponent) === $this->getCurrentGroup() ? $lastComponent : $this->lastSection;
+
 		$group = $this->addGroup($name);
+		$group->setOption('insertAfter', $inserAfter);
 		$prefixedName = $this instanceof Form ? $name : $this->getName() .'-' . $name;
 		$group->setOption('blockName', $blockName?->getName());
 		$group->setOption('watchForRedraw', $watchForRedraw);
 		$group->setOption('htmlId', $prefixedName);
 		$factory && $factory();
+		$this->lastSection = $group;
 		array_pop($this->nestedGroups);
 		$this->setCurrentGroup($this->nestedGroups ? end($this->nestedGroups) : null);
 
@@ -53,6 +63,16 @@ trait SectionTrait
 		return $group;
 	}
 
+	public function getComponentGroup($component): ?ControlGroup
+	{
+		foreach ($this->getGroups() as $_group) {
+			if (in_array($component, $_group->getControls(), true)) {
+				return $_group;
+			}
+		}
+		return null;
+	}
+
 	public function getSectionName(string ...$path): string
 	{
 		return implode(static::GROUP_LEVEL_SEPARATOR, $path);
@@ -61,7 +81,7 @@ trait SectionTrait
 	/**
 	 * Adds fieldset group to the form.
 	 */
-	public function addGroup(string|\Stringable|null $caption = null, bool $setAsCurrent = true): ControlGroup
+	public function addGroup(string|Stringable|null $caption = null, bool $setAsCurrent = true): ControlGroup
 	{
 		$this->nestedGroups[] = $group = new ControlGroup;
 		$group->setOption('label', $caption);
@@ -92,6 +112,17 @@ trait SectionTrait
 		}
 
 		return $this->structure;
+	}
+
+	public function getSections(): array
+	{
+		$sections = [];
+		foreach ($this->getStructure() as $_el) {
+			if ($_el['type'] === 'section') {
+				$sections[$_el['name']] = $_el;
+			}
+		}
+		return $sections;
 	}
 
 	// VYPOCET SECTION
@@ -128,7 +159,7 @@ trait SectionTrait
 
 			foreach ($group->getControls() as $control) {
 				// Přeskočíme hidden fieldy a komponenty s redrawHandler
-				if ($control instanceof Nette\Forms\Controls\HiddenField || $control->getOption('redrawHandler') === true) {
+				if ($control instanceof HiddenField || $control->getOption('redrawHandler') === true) {
 					continue;
 				}
 
@@ -141,7 +172,7 @@ trait SectionTrait
 
 				// Pokud je komponenta přímo v tomto kontejneru
 				if ($parent === $this) {
-					$items[$control->getName()] = [
+					$items[] = [
 						'name' => $control->getName(),
 						'type' => 'input',
 						'component' => $control
@@ -156,7 +187,7 @@ trait SectionTrait
 					$containerId = spl_object_id($topContainer);
 					if (!isset($processedContainers[$containerId])) {
 						$children = $this->collectAllComponents($topContainer, $componentToGroup);
-						$items[$topContainer->getName()] = [
+						$items[] = [
 							'name' => $topContainer->getName(),
 							'type' => 'container',
 							'component' => $topContainer,
@@ -168,7 +199,7 @@ trait SectionTrait
 				}
 			}
 
-			if (!empty($items)) {
+			if (!empty($items) || $groupName !== '') {
 				$allGroups[$groupName] = [
 					'name' => $groupName,
 					'type' => 'section',
@@ -178,23 +209,64 @@ trait SectionTrait
 			}
 		}
 
-		// Vytvoříme hierarchii - vnořené groupy přidáme do parent groups
+		// Vytvoříme hierarchii - vnořené groupy vložíme do parent groups na správná místa
 		foreach ($allGroups as $groupName => $groupData) {
 			$parentName = $this->getParentGroupName($groupName);
 
 			if ($parentName !== null && isset($allGroups[$parentName])) {
-				$allGroups[$parentName]['children'][$groupName] = &$allGroups[$groupName];
+				// Vložíme nested groupu na správné místo podle insertAfter
+				$this->insertItemAtCorrectPosition(
+					$allGroups[$parentName]['children'],
+					$groupData,
+					$groupData['section']->getOption('insertAfter')
+				);
 			}
+		}
+
+		// Připravíme seznam komponent bez hidden/redraw
+		$componentsList = [];
+		foreach ($this->getComponents() as $component) {
+			if ($component instanceof HiddenField || $component->getOption('redrawHandler') === true) {
+				continue;
+			}
+			$componentsList[] = $component;
 		}
 
 		// Projdeme komponenty kontejneru v původním pořadí
 		$result = [];
 		$processedGroups = [];
 
-		foreach ($this->getComponents() as $component) {
-			// Přeskočíme hidden fieldy a komponenty s redrawHandler
-			if ($component instanceof Nette\Forms\Controls\HiddenField || $component->getOption('redrawHandler') === true) {
-				continue;
+		foreach ($componentsList as $component) {
+			// Nejdřív zkontrolujeme, jestli před touto komponentou nemáme přidat prázdnou root groupu
+			foreach ($allGroups as $groupName => $groupData) {
+				if (isset($processedGroups[$groupName]) || str_contains($groupName, static::GROUP_LEVEL_SEPARATOR)) {
+					continue;
+				}
+
+				$insertAfter = $groupData['section']->getOption('insertAfter');
+
+				// Pokud má group insertAfter a odpovídá předchozí komponentě
+				if ($insertAfter !== null) {
+					$lastProcessedItem = empty($result) ? null : end($result);
+
+					if ($lastProcessedItem) {
+						$shouldInsert = false;
+
+						// Kontrola zda insertAfter odpovídá poslední přidané komponentě
+						if (isset($lastProcessedItem['component']) && $lastProcessedItem['component'] === $insertAfter) {
+							$shouldInsert = true;
+						}
+						// Kontrola zda insertAfter odpovídá poslední přidané section
+						elseif (isset($lastProcessedItem['section']) && $lastProcessedItem['section'] === $insertAfter) {
+							$shouldInsert = true;
+						}
+
+						if ($shouldInsert) {
+							$result[] = $groupData;
+							$processedGroups[$groupName] = true;
+						}
+					}
+				}
 			}
 
 			$group = $componentToGroup[spl_object_id($component)] ?? null;
@@ -205,7 +277,7 @@ trait SectionTrait
 				// Pokud je to root level group (pro tento kontejner) a ještě jsme ji nezpracovali
 				if (!str_contains($groupName, static::GROUP_LEVEL_SEPARATOR) && !isset($processedGroups[$groupName])) {
 					if (isset($allGroups[$groupName])) {
-						$result[$groupName] = $allGroups[$groupName];
+						$result[] = $allGroups[$groupName];
 						$processedGroups[$groupName] = true;
 					}
 				}
@@ -221,12 +293,12 @@ trait SectionTrait
 						if (!str_contains($childGroupName, static::GROUP_LEVEL_SEPARATOR) &&
 							!isset($processedGroups[$childGroupName]) &&
 							isset($allGroups[$childGroupName])) {
-							$result[$childGroupName] = $allGroups[$childGroupName];
+							$result[] = $allGroups[$childGroupName];
 							$processedGroups[$childGroupName] = true;
 						}
 					} elseif (!isset($processedContainersGlobal[$containerId])) {
 						$children = $this->collectAllComponents($component, $componentToGroup);
-						$result[$component->getName()] = [
+						$result[] = [
 							'name' => $component->getName(),
 							'type' => 'container',
 							'component' => $component,
@@ -234,7 +306,7 @@ trait SectionTrait
 						];
 					}
 				} else {
-					$result[$component->getName()] = [
+					$result[] = [
 						'name' => $component->getName(),
 						'type' => 'input',
 						'component' => $component
@@ -243,7 +315,54 @@ trait SectionTrait
 			}
 		}
 
+		// Přidáme zbylé root level groupy, které nebyly zpracované
+		foreach ($allGroups as $groupName => $groupData) {
+			if (!str_contains($groupName, static::GROUP_LEVEL_SEPARATOR) && !isset($processedGroups[$groupName])) {
+				$result[] = $groupData;
+			}
+		}
+
 		return $result;
+	}
+
+	/**
+	 * Vloží item na správné místo v children podle insertAfter
+	 */
+	private function insertItemAtCorrectPosition(array &$children, array $newItem, $insertAfter): void
+	{
+		if ($insertAfter === null) {
+			// Přidej na konec
+			$children[] = $newItem;
+			return;
+		}
+
+		// Najdi pozici prvku, za který se má vložit
+		$insertPosition = null;
+
+		foreach ($children as $index => $child) {
+			$matches = false;
+
+			// Kontrola zda insertAfter je komponenta
+			if (isset($child['component']) && $child['component'] === $insertAfter) {
+				$matches = true;
+			}
+			// Kontrola zda insertAfter je section
+			elseif (isset($child['section']) && $child['section'] === $insertAfter) {
+				$matches = true;
+			}
+
+			if ($matches) {
+				$insertPosition = $index + 1;
+				break;
+			}
+		}
+
+		if ($insertPosition !== null) {
+			array_splice($children, $insertPosition, 0, [$newItem]);
+		} else {
+			// Pokud prvek nebyl nalezen, přidej na konec
+			$children[] = $newItem;
+		}
 	}
 
 	/**
@@ -294,20 +413,20 @@ trait SectionTrait
 
 		foreach ($container->getComponents() as $component) {
 			// Přeskočíme hidden fieldy a komponenty s redrawHandler
-			if ($component instanceof Nette\Forms\Controls\HiddenField || $component->getOption('redrawHandler') === true) {
+			if ($component instanceof HiddenField || $component->getOption('redrawHandler') === true) {
 				continue;
 			}
 
 			if ($component instanceof Container) {
 				$children = $this->collectAllComponents($component, $componentToGroup);
-				$result[$component->getName()] = [
+				$result[] = [
 					'name' => $component->getName(),
 					'type' => 'container',
 					'component' => $component,
 					'children' => $children
 				];
 			} else {
-				$result[$component->getName()] = [
+				$result[] = [
 					'name' => $component->getName(),
 					'type' => 'input',
 					'component' => $component
