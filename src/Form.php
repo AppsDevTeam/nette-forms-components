@@ -2,12 +2,9 @@
 
 namespace ADT\Forms;
 
-use Exception;
 use Nette;
 use Nette\Application\UI\Presenter;
-use Nette\Forms\Container;
-use Nette\Forms\ControlGroup;
-use Stringable;
+use Nette\Forms\Controls\BaseControl;
 
 class Form extends Nette\Application\UI\Form
 {
@@ -45,5 +42,10 @@ class Form extends Nette\Application\UI\Form
 			$message = $this->getTranslator()->translate($message);
 		}
 		parent::addError($message, false);
+	}
+
+	public function watchForSubmit(BaseControl $control): void
+	{
+		$control->setHtmlAttribute('data-adt-redraw-snippet', $this->addSubmit('submit')->getHtmlName());
 	}
 }

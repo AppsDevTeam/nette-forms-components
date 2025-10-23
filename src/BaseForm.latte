@@ -11,16 +11,16 @@
 {define renderEl}
 	{if $el['type'] === 'section'}
 		<div {if $el['name']}id="{$el['name']}"{/if}>
-			{if $el['section']->getOption('redrawHandler') && (!$control->isControlInvalid() || $control->isControlInvalid($el['section']->getOption('htmlId')))}
-				<div n:snippet="$el['section']->getOption('htmlId')">
-					{include renderSection, section => $el}
-				</div>
+			{if $el['section']->getOption('redrawHandler')}
+				{if (!$control->isControlInvalid() || $control->isControlInvalid($el['section']->getOption('htmlId')))}
+					<div n:snippet="$el['section']->getOption('htmlId')">
+						{include renderSection, section => $el}
+					</div>
 
-				{include renderInput input => $el['section']->getOption('redrawHandler')}
+					{include renderInput input => $el['section']->getOption('redrawHandler')}
+				{/if}
 			{else}
-				<div>
-					{include renderSection, section => $el}
-				</div>
+				{include renderSection, section => $el}
 			{/if}
 		</div>
 	{else}

@@ -5,7 +5,6 @@ namespace ADT\Forms;
 use Exception;
 use Nette\Forms\Container;
 use Nette\Forms\ControlGroup;
-use Nette\Forms\Controls\HiddenField;
 use Stringable;
 
 trait SectionTrait
@@ -22,10 +21,6 @@ trait SectionTrait
 	 */
 	public function addSection(?callable $factory = null, ?string $name = null, ?BlockName $blockName = null, array $watchForRedraw = [], ?callable $onRedraw = null, array $validationScope = []): ControlGroup
 	{
-		if (($watchForRedraw || $onRedraw) && !$name) {
-			throw new Exception('Name is required when onRedraw is set.');
-		}
-
 		if ($this->getCurrentGroup() !== null) {
 			$name = $this->getCurrentGroup()->getOption('label') . static::GROUP_LEVEL_SEPARATOR . $name;
 		}
@@ -38,25 +33,33 @@ trait SectionTrait
 		$group->setOption('insertAfter', $insertAfter);
 		$prefixedName = $this instanceof Form ? $name : $this->getName() .'-' . $name;
 		$group->setOption('blockName', $blockName?->getName());
-		$group->setOption('watchForRedraw', $watchForRedraw);
 		$group->setOption('htmlId', $prefixedName);
 		$factory && $factory();
 		$this->lastSection = $group;
 		array_pop($this->nestedGroups);
 		$this->setCurrentGroup($this->nestedGroups ? end($this->nestedGroups) : null);
 
-		if ($watchForRedraw || $onRedraw) {
-			$redrawHandlerName = 'redraw' . ucfirst($name);
-			$redrawHandler = $this->addSubmit($redrawHandlerName)
-				->setOption('redrawHandler', true)
-				->setValidationScope($validationScope);
-			$redrawHandler->onClick[] = function() use ($onRedraw, $prefixedName) {
-				$onRedraw && $onRedraw();
-				$this->getForm()->getParent()->redrawControl($prefixedName);
-			};
+		if ($watchForRedraw) {
+			$redrawHandler = $this->addSubmit('redraw' . ucfirst($name));
+			$redrawHandler->setValidationScope($validationScope);
+			$redrawHandler->setOption('redrawHandler', true);
+
+			if (is_callable($onRedraw)) {
+				$redrawHandler->onClick[] = function () use ($onRedraw, $prefixedName) {
+					$onRedraw();
+					$snippet = '';
+					foreach (explode(self::GROUP_LEVEL_SEPARATOR, $prefixedName) as $_part) {
+						$snippet .= $_part;
+						$this->getForm()->getParent()->redrawControl($snippet);
+						$snippet .= self::GROUP_LEVEL_SEPARATOR;
+
+					}
+				};
+			}
+
 			$group->setOption('redrawHandler', $redrawHandler);
-			foreach ($watchForRedraw as $_name) {
-				$this[$_name]->setHtmlAttribute('data-adt-redraw-snippet', $redrawHandler->getHtmlName());
+			foreach ($watchForRedraw as $_control) {
+				$_control->setHtmlAttribute('data-adt-redraw-snippet', $redrawHandler->getHtmlName());
 			}
 		}
 
