@@ -4,7 +4,6 @@ namespace ADT\Forms;
 
 use Exception;
 use Nette\Forms\Container;
-use Nette\Forms\ControlGroup;
 
 trait SectionTrait
 {
@@ -29,7 +28,7 @@ trait SectionTrait
 		if ($this->getCurrentGroup()) {
 			$group = $this->getCurrentGroup()->addGroup($this, $name);
 		} else {
-			$group = new \ADT\Forms\ControlGroup($this, $name);
+			$group = new ControlGroup($this, $name);
 			$this->groups[] = $group;
 		}
 		$this->setCurrentGroup($group);
@@ -44,7 +43,7 @@ trait SectionTrait
 		$this->setCurrentGroup($this->nestedGroups ? end($this->nestedGroups) : null);
 
 		if ($watchForRedraw) {
-			$redrawHandler = $this->addSubmit('redraw' . ucfirst($name));
+			$redrawHandler = $this->addSubmit('_redraw' . ucfirst($name));
 			$redrawHandler->setValidationScope($validationScope);
 			$redrawHandler->setOption('redrawHandler', true);
 
@@ -79,8 +78,8 @@ trait SectionTrait
 	{
 		$sections = [];
 		foreach ($this->getStructure() as $_el) {
-			if ($_el['type'] === 'section') {
-				$sections[$_el['name']] = $_el;
+			if ($_el instanceof ControlGroup) {
+				$sections[$_el->getName()] = $_el;
 			}
 		}
 		return $sections;
