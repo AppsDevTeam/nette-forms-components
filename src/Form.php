@@ -11,6 +11,7 @@ class Form extends Nette\Application\UI\Form
 	use AnnotationsTrait;
 	use GetComponentTrait;
 	use SectionTrait;
+	use StructureTrait;
 
 	private ?BootstrapFormRenderer $renderer = null;
 
@@ -18,7 +19,7 @@ class Form extends Nette\Application\UI\Form
 	{
 		parent::__construct($parent, $name);
 
-		$this->monitor(Presenter::class, function($presenter) {
+		$this->monitor(Presenter::class, function() {
 			// must be called here because onError and onRender callbacks are set in the constructor
 			$this->getRenderer();
 		});

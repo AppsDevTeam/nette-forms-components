@@ -9,57 +9,55 @@
 {/define}
 
 {define renderEl}
-	{if $el['type'] === 'section'}
-		<div {if $el['name']}id="{$el['name']}"{/if}>
-			{if $el['section']->getOption('redrawHandler')}
-				{if (!$control->isControlInvalid() || $control->isControlInvalid($el['section']->getOption('htmlId')))}
-					<div n:snippet="$el['section']->getOption('htmlId')">
+	{if $el instanceof ADT\Forms\ControlGroup}
+		<div {if $el->getName()}id="{$el->getName()}"{/if}>
+			{if $el->getOption('redrawHandler')}
+				{if (!$control->isControlInvalid() || $control->isControlInvalid($el->getOption('htmlId')))}
+					<div n:snippet="$el->getOption('htmlId')">
 						{include renderSection, section => $el}
 					</div>
 
-					{include renderInput input => $el['section']->getOption('redrawHandler')}
+					{include renderControl control => $el->getOption('redrawHandler')}
 				{/if}
 			{else}
 				{include renderSection, section => $el}
 			{/if}
 		</div>
 	{else}
-		{var $component = $el['component']}
-
-		{var $blockName = 'component-' . $component->getName()}
+		{var $blockName = 'component-' . $el->getName()}
 		{ifset #$blockName}
-			{include #$blockName, component => $component}
+			{include #$blockName, component => $el}
 		{else}
-			{ifset $el['children']}
-				{foreach $el['children'] as $_el}
+			{if $el instanceof Nette\Forms\Container}
+				{foreach $el->getStructure() as $_el}
 					{include renderEl, el => $_el}
 				{/foreach}
 			{else}
-				{include renderInput, input => $component}
-			{/ifset}
+				{include renderControl, control => $el}
+			{/if}
 		{/ifset}
 	{/if}
 {/define}
 
 {define renderSection}
-	{var $blockName = 'section-' . str_replace('__', '-', $section['name'])}
+	{var $blockName = 'section-' . $section->getName()}
 	{ifset #$blockName}
 		{include #$blockName, section => $section}
-	{elseif $section['section']->getOption('blockName')}
-		{var $blockName = $section['section']->getOption('blockName')}
+	{elseif $section->getOption('blockName')}
+		{var $blockName = $section->getOption('blockName')}
 		{include #$blockName, section => $section}
 	{else}
-		{foreach $section['children'] as $_el}
+		{foreach $section->getStructure() as $_el}
 			{include renderEl, el => $_el}
 		{/foreach}
 	{/ifset}
 {/define}
 
-{define renderInput}
-	{if $input instanceof \Nette\Forms\Controls\SubmitButton && !$input->getCaption() || $input instanceof Nette\Forms\Controls\HiddenField}
-		{input $input hidden => true}
+{define renderControl}
+	{if $control instanceof \Nette\Forms\Controls\SubmitButton && !$control->getCaption() || $control instanceof Nette\Forms\Controls\HiddenField}
+		{input $control hidden => true}
 	{else}
-		{formPair $input}
+		{formPair $control}
 	{/if}
 {/define}
 
