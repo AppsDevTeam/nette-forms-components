@@ -309,8 +309,7 @@ abstract class BaseForm extends Control
 
 	public static function getDefaultTemplateFile(): string
 	{
-		$reflection = new \ReflectionClass(static::class);
-		return dirname($reflection->getFileName()) . '/BaseForm.latte';
+		return __DIR__ . '/BaseForm.latte';
 	}
 
 	public function redrawControl(?string $snippet = null, bool $redraw = true): void
