@@ -11,7 +11,7 @@ class Form extends Nette\Application\UI\Form
 	use AnnotationsTrait;
 	use GetComponentTrait;
 	use SectionTrait;
-	use StructureTrait;
+	use ElementsTrait;
 
 	private ?BootstrapFormRenderer $renderer = null;
 

@@ -8,7 +8,7 @@ use Nette\InvalidArgumentException;
 
 class ControlGroup extends \Nette\Forms\ControlGroup
 {
-	use StructureTrait;
+	use ElementsTrait;
 
 	protected ?string $name = null;
 

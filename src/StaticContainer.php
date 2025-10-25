@@ -11,7 +11,7 @@ class StaticContainer extends BaseContainer
 {
 	use GetComponentTrait;
 	use SectionTrait;
-	use StructureTrait;
+	use ElementsTrait;
 
 	private ?BaseControl $isFilledComponent = null;
 	private bool $isTemplate = false;

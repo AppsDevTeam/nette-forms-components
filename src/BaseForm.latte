@@ -29,7 +29,7 @@
 			{include #$blockName, component => $el}
 		{else}
 			{if $el instanceof Nette\Forms\Container}
-				{foreach $el->getStructure() as $_el}
+				{foreach $el->getElements() as $_el}
 					{include renderEl, el => $_el}
 				{/foreach}
 			{else}
@@ -47,7 +47,7 @@
 		{var $blockName = $section->getOption('blockName')}
 		{include #$blockName, section => $section}
 	{else}
-		{foreach $section->getStructure() as $_el}
+		{foreach $section->getElements() as $_el}
 			{include renderEl, el => $_el}
 		{/foreach}
 	{/ifset}
@@ -65,7 +65,7 @@
 	{form form}
 		{include errors}
 
-		{foreach $form->getStructure() as $_el}
+		{foreach $form->getElements() as $_el}
 			{include renderEl el => $_el}
 		{/foreach}
 	{/form}

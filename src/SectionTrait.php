@@ -24,7 +24,6 @@ trait SectionTrait
 		$lastComponent = $this->getForm()->getComponents();
 		$lastComponent = end($lastComponent) ?: null;
 		$insertAfter = $this->lastSection?->getOption('insertAfter') !== $lastComponent && ($lastComponent instanceof Container ? $lastComponent->getCurrentGroup() : $lastComponent->getOption('group')) === $this->getCurrentGroup() ? $lastComponent : $this->lastSection;
-		
 		if ($this->getCurrentGroup()) {
 			$group = $this->getCurrentGroup()->addGroup($this, $name);
 		} else {
@@ -77,7 +76,7 @@ trait SectionTrait
 	public function getSections(): array
 	{
 		$sections = [];
-		foreach ($this->getStructure() as $_el) {
+		foreach ($this->getElements() as $_el) {
 			if ($_el instanceof ControlGroup) {
 				$sections[$_el->getName()] = $_el;
 			}
