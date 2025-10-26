@@ -4,6 +4,7 @@ namespace ADT\Forms;
 
 use Exception;
 use Nette\Forms\Container;
+use Nette\Forms\Controls\HiddenField;
 
 trait SectionTrait
 {
@@ -21,8 +22,13 @@ trait SectionTrait
 			$name = $this->getCurrentGroup()->getName() . static::GROUP_LEVEL_SEPARATOR . $name;
 		}
 
-		$lastComponent = $this->getForm()->getComponents();
-		$lastComponent = end($lastComponent) ?: null;
+		$lastComponent = null;
+		foreach (array_reverse($this->getForm()->getComponents()) as $_component) {
+			if (!$_component instanceof HiddenField) {
+				$lastComponent = $_component;
+				break;
+			}
+		}
 		$insertAfter = $this->lastSection?->getOption('insertAfter') !== $lastComponent && ($lastComponent instanceof Container ? $lastComponent->getCurrentGroup() : $lastComponent->getOption('group')) === $this->getCurrentGroup() ? $lastComponent : $this->lastSection;
 		if ($this->getCurrentGroup()) {
 			$group = $this->getCurrentGroup()->addGroup($this, $name);
