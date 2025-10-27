@@ -24,10 +24,13 @@ trait SectionTrait
 
 		$lastComponent = null;
 		foreach (array_reverse($this->getComponents()) as $_component) {
-			if (!$_component instanceof HiddenField) {
-				$lastComponent = $_component;
-				break;
+			// redrawHandlery jsou umele vlozene, takze nechceme, aby ovlivnovali poradi
+			if ($_component->getOption('redrawHandler') === true) {
+				continue;
 			}
+
+			$lastComponent = $_component;
+			break;
 		}
 		$insertAfter = $this->lastSection?->getOption('insertAfter') !== $lastComponent && ($lastComponent instanceof Container ? $lastComponent->getCurrentGroup() : $lastComponent->getOption('group')) === $this->getCurrentGroup() ? $lastComponent : $this->lastSection;
 		if ($this->getCurrentGroup()) {

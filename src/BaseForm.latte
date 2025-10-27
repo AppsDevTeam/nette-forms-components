@@ -24,7 +24,7 @@
 			{/if}
 		</div>
 	{else}
-		{var $blockName = 'component-' . $el->getName()}
+		{var $blockName = 'component-' . $el->lookupPath(Nette\Forms\Form::class)}
 		{ifset #$blockName}
 			{include #$blockName, component => $el}
 		{else}
