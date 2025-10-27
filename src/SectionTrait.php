@@ -23,7 +23,7 @@ trait SectionTrait
 		}
 
 		$lastComponent = null;
-		foreach (array_reverse($this->getForm()->getComponents()) as $_component) {
+		foreach (array_reverse($this->getComponents()) as $_component) {
 			if (!$_component instanceof HiddenField) {
 				$lastComponent = $_component;
 				break;
