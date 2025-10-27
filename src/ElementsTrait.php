@@ -3,7 +3,6 @@
 namespace ADT\Forms;
 
 use Nette\Forms\Container;
-use Nette\Forms\Controls\HiddenField;
 
 trait ElementsTrait
 {	
@@ -23,11 +22,7 @@ trait ElementsTrait
 		$result = [];
 
 		foreach ($this->getComponents() as $component) {
-			if (
-				$component instanceof HiddenField
-				||
-				$component->getOption('redrawHandler') === true
-			) {
+			if ($component->getOption('redrawHandler') === true) {
 				continue;
 			}
 
