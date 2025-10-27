@@ -51,19 +51,16 @@ trait SectionTrait
 			$redrawHandler = $this->addSubmit('_redraw' . ucfirst($name));
 			$redrawHandler->setValidationScope($validationScope);
 			$redrawHandler->setOption('redrawHandler', true);
+			$redrawHandler->onClick[] = function () use ($onRedraw, $prefixedName) {
+				$onRedraw && $onRedraw();
+				$snippet = '';
+				foreach (explode(self::GROUP_LEVEL_SEPARATOR, $prefixedName) as $_part) {
+					$snippet .= $_part;
+					$this->getForm()->getParent()->redrawControl($snippet);
+					$snippet .= self::GROUP_LEVEL_SEPARATOR;
 
-			if (is_callable($onRedraw)) {
-				$redrawHandler->onClick[] = function () use ($onRedraw, $prefixedName) {
-					$onRedraw();
-					$snippet = '';
-					foreach (explode(self::GROUP_LEVEL_SEPARATOR, $prefixedName) as $_part) {
-						$snippet .= $_part;
-						$this->getForm()->getParent()->redrawControl($snippet);
-						$snippet .= self::GROUP_LEVEL_SEPARATOR;
-
-					}
-				};
-			}
+				}
+			};
 
 			$group->setOption('redrawHandler', $redrawHandler);
 			foreach ($watchForRedraw as $_control) {
