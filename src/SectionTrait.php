@@ -4,13 +4,11 @@ namespace ADT\Forms;
 
 use Exception;
 use Nette\Forms\Container;
-use Nette\Forms\Controls\HiddenField;
 
 trait SectionTrait
 {
 	const string GROUP_LEVEL_SEPARATOR = '_';
 
-	protected array $nestedGroups = [];
 	protected ?ControlGroup $lastSection = null;
 
 	/**
@@ -34,34 +32,31 @@ trait SectionTrait
 		}
 		$insertAfter = $this->lastSection?->getOption('insertAfter') !== $lastComponent && ($lastComponent instanceof Container ? $lastComponent->getCurrentGroup() : $lastComponent->getOption('group')) === $this->getCurrentGroup() ? $lastComponent : $this->lastSection;
 		if ($this->getCurrentGroup()) {
-			$group = $this->getCurrentGroup()->addGroup($this, $name);
+			$group = $this->getCurrentGroup()->addGroup($this->getForm()->ancestorGroups, $name);
 		} else {
-			$group = new ControlGroup($this, $name);
+			$group = new ControlGroup($this->getForm()->ancestorGroups, $name);
 			$this->groups[] = $group;
 		}
 		$this->setCurrentGroup($group);
-		$this->nestedGroups[] = $group;
+		$this->getForm()->ancestorGroups[] = $group;
 		$group->setOption('insertAfter', $insertAfter);
 		$prefixedName = $this instanceof Form ? $name : $this->getName() .'-' . $name;
 		$group->setOption('blockName', $blockName?->getName());
 		$group->setOption('htmlId', $prefixedName);
 		$factory && $factory();
 		$this->lastSection = $group;
-		array_pop($this->nestedGroups);
-		$this->setCurrentGroup($this->nestedGroups ? end($this->nestedGroups) : null);
+		array_pop($this->getForm()->ancestorGroups);
+		$this->setCurrentGroup($this->getForm()->ancestorGroups ? end($this->getForm()->ancestorGroups) : null);
 
 		if ($watchForRedraw) {
 			$redrawHandler = $this->addSubmit('_redraw' . ucfirst($name));
 			$redrawHandler->setValidationScope($validationScope);
 			$redrawHandler->setOption('redrawHandler', true);
-			$redrawHandler->onClick[] = function () use ($onRedraw, $prefixedName) {
+			$redrawHandler->onClick[] = function () use ($onRedraw, $prefixedName, $group) {
 				$onRedraw && $onRedraw();
-				$snippet = '';
-				foreach (explode(self::GROUP_LEVEL_SEPARATOR, $prefixedName) as $_part) {
-					$snippet .= $_part;
-					$this->getForm()->getParent()->redrawControl($snippet);
-					$snippet .= self::GROUP_LEVEL_SEPARATOR;
-
+				$group->setOption('isControlInvalid', true);
+				foreach (array_merge([$group], $group->getAncestorGroups()) as $_group) {
+					$this->getForm()->getParent()->redrawControl($_group->getName());
 				}
 			};
 

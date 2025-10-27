@@ -12,7 +12,7 @@
 	{if $el instanceof ADT\Forms\ControlGroup}
 		<div {if $el->getName()}id="{$el->getName()}"{/if}>
 			{if $el->getOption('redrawHandler')}
-				{if (!$control->isControlInvalid() || $control->isControlInvalid($el->getOption('htmlId')))}
+				{if !$control->isControlInvalid() || $control->isControlInvalid($el->getOption('htmlId')) || $el->isControlInvalid()}
 					<div n:snippet="$el->getOption('htmlId')">
 						{include renderSection, section => $el}
 					</div>

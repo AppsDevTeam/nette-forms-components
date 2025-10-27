@@ -12,18 +12,19 @@ class ControlGroup extends \Nette\Forms\ControlGroup
 
 	protected ?string $name = null;
 
-	protected $parent;
+	/** @var ControlGroup[] */
+	protected array $ancestorGroups;
 
-	public function __construct($parent, ?string $name)
+	public function __construct(array $ancestorGroups, ?string $name)
 	{
 		parent::__construct();
-		$this->parent = $parent;
+		$this->ancestorGroups = $ancestorGroups;
 		$this->name = $name;
 	}
 
-	public function addGroup($parent, ?string $name): ControlGroup
+	public function addGroup(array $ancestorGroups, ?string $name): ControlGroup
 	{
-		$this->groups[] = $group = new ControlGroup($parent, $name);
+		$this->groups[] = $group = new ControlGroup($ancestorGroups, $name);
 		return $group;
 	}
 	
@@ -57,5 +58,20 @@ class ControlGroup extends \Nette\Forms\ControlGroup
 	public function getComponents(): array
 	{
 		return $this->getControls();
+	}
+	
+	public function isControlInvalid(): bool
+	{
+		foreach (array_merge([$this], $this->ancestorGroups) as $_group) {
+			if ($_group->getOption('isControlInvalid')) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public function getAncestorGroups(): array
+	{
+		return $this->ancestorGroups;
 	}
 }

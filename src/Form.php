@@ -14,6 +14,7 @@ class Form extends Nette\Application\UI\Form
 	use ElementsTrait;
 
 	private ?BootstrapFormRenderer $renderer = null;
+	public array $ancestorGroups = [];
 
 	public function __construct(?Nette\ComponentModel\IContainer $parent = null, ?string $name = null)
 	{
