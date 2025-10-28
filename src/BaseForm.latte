@@ -10,10 +10,10 @@
 
 {define renderEl}
 	{if $el instanceof ADT\Forms\ControlGroup}
-		<div {if $el->getName()}id="{$el->getName()}"{/if}>
+		<div {if $el->getName()}id="{$el->getHtmlId()}"{/if}>
 			{if $el->getOption('redrawHandler')}
 				{if !$control->isControlInvalid() || $control->isControlInvalid($el->getOption('htmlId')) || $el->isControlInvalid()}
-					<div n:snippet="$el->getOption('htmlId')">
+					<div n:snippet="$el->getHtmlId()">
 						{include renderSection, section => $el}
 					</div>
 

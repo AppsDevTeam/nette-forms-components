@@ -13,7 +13,10 @@ class Form extends Nette\Application\UI\Form
 	use SectionTrait;
 	use ElementsTrait;
 
+	const string GROUP_LEVEL_SEPARATOR = '-';
+
 	private ?BootstrapFormRenderer $renderer = null;
+	/** @var ControlGroup[] */
 	public array $ancestorGroups = [];
 
 	public function __construct(?Nette\ComponentModel\IContainer $parent = null, ?string $name = null)

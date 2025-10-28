@@ -2,6 +2,7 @@
 
 namespace ADT\Forms;
 
+use Exception;
 use Nette\Forms\Container;
 use Nette\Forms\Control;
 use Nette\InvalidArgumentException;
@@ -11,26 +12,43 @@ class ControlGroup extends \Nette\Forms\ControlGroup
 	use ElementsTrait;
 
 	protected ?string $name = null;
-
 	/** @var ControlGroup[] */
 	protected array $ancestorGroups;
+	protected Container $parent;
 
-	public function __construct(array $ancestorGroups, ?string $name)
+	public function __construct(Container $parent, array $ancestorGroups, ?string $name)
 	{
 		parent::__construct();
+		$this->parent = $parent;
 		$this->ancestorGroups = $ancestorGroups;
 		$this->name = $name;
 	}
 
-	public function addGroup(array $ancestorGroups, ?string $name): ControlGroup
+	public function addGroup(Container $parent, array $ancestorGroups, ?string $name): ControlGroup
 	{
-		$this->groups[] = $group = new ControlGroup($ancestorGroups, $name);
+		$this->groups[] = $group = new ControlGroup($parent, $ancestorGroups, $name);
 		return $group;
 	}
 	
 	public function getName(): ?string
 	{
 		return $this->name;
+	}
+
+	/**
+	 * @throws Exception
+	 */
+	public function getHtmlId(): string
+	{
+		if ($this->name === null) {
+			throw new Exception('Control group name is not set.');
+		}
+
+		if ($this->parent instanceof Form) {
+			return $this->name;
+		}
+
+		return $this->parent->lookupPath(Form::class) . Form::GROUP_LEVEL_SEPARATOR . $this->name;
 	}
 
 	public function add(...$items): static
