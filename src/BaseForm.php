@@ -5,10 +5,12 @@ namespace ADT\Forms;
 use Exception;
 use Nette\Application\UI\Control;
 use Nette\Application\UI\Presenter;
+use Nette\Forms\Controls\BaseControl;
 use Nette\Forms\SubmitterControl;
 use Nette\Utils\ArrayHash;
 use Nette\Utils\Callback;
 use Nette\Utils\Type;
+use ReflectionClass;
 use ReflectionException;
 use ReflectionParameter;
 
@@ -255,23 +257,26 @@ abstract class BaseForm extends Control
 		return $handler(...$params);
 	}
 
+	/**
+	 * @throws Exception
+	 */
 	protected function processToggles(Form $form, bool $emptyValue): void
 	{
 		if ($this->emptyHiddenToggleControls) {
 			$toggles = $form->getToggles();
-			foreach ($form->getGroups() as $_group) {
-				$toggleName = '';
-				foreach (explode(Form::GROUP_LEVEL_SEPARATOR, (string)$_group->getOption('label')) as $_togglePart) {
-					$toggleName = trim($toggleName . Form::GROUP_LEVEL_SEPARATOR . $_togglePart, Form::GROUP_LEVEL_SEPARATOR);
-					if (isset($toggles[$toggleName]) && $toggles[$toggleName] === false) {
-						foreach ($_group->getControls() as $_control) {
-							$_control->setOption('hidden', true);
-							if ($emptyValue) {
-								if (method_exists($_control, 'setNullable')) {
-									$_control->setNullable(true);
-								}
-								$_control->setValue(null);
+			foreach ($this->getSections() as $_section) {
+				if (isset($toggles[$_section->getHtmlId()]) && $toggles[$_section->getHtmlId()] === false) {
+					foreach ($_section->getControls() as $_control) {
+						if (!$_control instanceof BaseControl) {
+							continue;
+						}
+
+						$_control->setOption('hidden', true);
+						if ($emptyValue) {
+							if (method_exists($_control, 'setNullable')) {
+								$_control->setNullable();
 							}
+							$_control->setValue(null);
 						}
 					}
 				}
@@ -279,9 +284,30 @@ abstract class BaseForm extends Control
 		}
 	}
 
+	/**
+	 * @return Section[]
+	 */
+	protected function getSections(): array
+	{
+		$sections = [];
+		foreach ($this->form->getSections() as $_section) {
+			$sections[] = $_section;
+		}
+		foreach ($this->form->getComponentTree() as $_component) {
+			if (!$_component instanceof StaticContainer) {
+				continue;
+			}
+			foreach ($_component->getSections() as $_section) {
+				$sections[] = $_section;
+			}
+
+		}
+		return $sections;
+	}
+
 	protected function getTemplateFile(): ?string
 	{
-		$reflectionClass = new \ReflectionClass($this);
+		$reflectionClass = new ReflectionClass($this);
 		$templateName = $reflectionClass->getShortName() .'.latte';
 
 		$templateFile = dirname($reflectionClass->getFileName()) . '/' . $templateName;

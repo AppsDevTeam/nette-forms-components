@@ -7,32 +7,37 @@ use Nette\Forms\Container;
 use Nette\Forms\Control;
 use Nette\InvalidArgumentException;
 
-class ControlGroup extends \Nette\Forms\ControlGroup
+class Section extends \Nette\Forms\ControlGroup
 {
 	use ElementsTrait;
 
 	protected ?string $name = null;
-	/** @var ControlGroup[] */
-	protected array $ancestorGroups;
+	/** @var Section[] */
+	protected array $ancestorSections;
 	protected Container $parent;
 
-	public function __construct(Container $parent, array $ancestorGroups, ?string $name)
+	public function __construct(Container $parent, array $ancestorSections, ?string $name)
 	{
 		parent::__construct();
 		$this->parent = $parent;
-		$this->ancestorGroups = $ancestorGroups;
+		$this->ancestorSections = $ancestorSections;
 		$this->name = $name;
 	}
 
-	public function addGroup(Container $parent, array $ancestorGroups, ?string $name): ControlGroup
+	public function addSection(Container $parent, array $ancestorSections, ?string $name): Section
 	{
-		$this->groups[] = $group = new ControlGroup($parent, $ancestorGroups, $name);
-		return $group;
+		$this->sections[] = $section = new Section($parent, $ancestorSections, $name);
+		return $section;
 	}
 	
 	public function getName(): ?string
 	{
 		return $this->name;
+	}
+
+	public function getParent(): Container
+	{
+		return $this->parent;
 	}
 
 	/**
@@ -41,7 +46,7 @@ class ControlGroup extends \Nette\Forms\ControlGroup
 	public function getHtmlId(): string
 	{
 		if ($this->name === null) {
-			throw new Exception('Control group name is not set.');
+			throw new Exception('Section name is not set.');
 		}
 
 		if ($this->parent instanceof Form) {
@@ -55,7 +60,7 @@ class ControlGroup extends \Nette\Forms\ControlGroup
 	{
 		foreach ($items as $item) {
 			if ($item instanceof Control) {
-				$item->setOption('group', $this);
+				$item->setOption('section', $this);
 				$this->controls[$item] = null;
 
 			} elseif ($item instanceof Container) {
@@ -80,16 +85,16 @@ class ControlGroup extends \Nette\Forms\ControlGroup
 	
 	public function isControlInvalid(): bool
 	{
-		foreach (array_merge([$this], $this->ancestorGroups) as $_group) {
-			if ($_group->getOption('isControlInvalid')) {
+		foreach (array_merge([$this], $this->ancestorSections) as $_section) {
+			if ($_section->getOption('isControlInvalid')) {
 				return true;
 			}
 		}
 		return false;
 	}
 	
-	public function getAncestorGroups(): array
+	public function getAncestorSections(): array
 	{
-		return $this->ancestorGroups;
+		return $this->ancestorSections;
 	}
 }

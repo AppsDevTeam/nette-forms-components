@@ -8,15 +8,15 @@ use Nette\InvalidArgumentException;
 
 trait SectionTrait
 {
-	protected ?ControlGroup $lastSection = null;
-	/** @var ControlGroup[] */
-	protected array $allGroups = [];
+	protected ?Section $lastSection = null;
+	/** @var Section[] */
+	protected array $allSections = [];
 	private const string NameRegexp = '#^[a-zA-Z0-9_]+$#D';
 
 	/**
 	 * @throws Exception
 	 */
-	public function addSection(?callable $factory = null, ?string $name = null, ?BlockName $blockName = null, array $watchForRedraw = [], ?callable $onRedraw = null, array $validationScope = []): ControlGroup
+	public function addSection(?callable $factory = null, ?string $name = null, ?BlockName $blockName = null, array $watchForRedraw = [], ?callable $onRedraw = null, array $validationScope = []): Section
 	{
 		$lastComponent = null;
 		foreach (array_reverse($this->getComponents()) as $_component) {
@@ -28,28 +28,28 @@ trait SectionTrait
 			$lastComponent = $_component;
 			break;
 		}
-		$insertAfter = $this->lastSection?->getOption('insertAfter') !== $lastComponent && ($lastComponent instanceof Container ? $lastComponent->getCurrentGroup() : $lastComponent->getOption('group')) === $this->getCurrentGroup() ? $lastComponent : $this->lastSection;
+		$insertAfter = $this->lastSection?->getOption('insertAfter') !== $lastComponent && ($lastComponent instanceof Container ? $lastComponent->getCurrentGroup() : $lastComponent->getOption('section')) === $this->getCurrentGroup() ? $lastComponent : $this->lastSection;
 		if ($this->getCurrentGroup()) {
-			$group = $this->getCurrentGroup()->addGroup($this, $this->getForm()->ancestorGroups, $name);
+			$section = $this->getCurrentGroup()->addSection($this, $this->getForm()->ancestorGroups, $name);
 		} else {
-			$group = new ControlGroup($this, $this->getForm()->ancestorGroups, $name);
-			$this->groups[] = $group;
+			$section = new Section($this, $this->getForm()->ancestorGroups, $name);
+			$this->sections[] = $section;
 		}
 		if ($name) {
 			if (!preg_match(self::NameRegexp, $name)) {
 				throw new InvalidArgumentException("Component name must be non-empty alphanumeric string, '$name' given.");
 			}
-			if (isset($this->allGroups[$name])) {
+			if (isset($this->allSections[$name])) {
 				throw new Exception("Section $name already exists.");
 			}
-			$this->allGroups[$name] = $group;
+			$this->allSections[$name] = $section;
 		}
-		$this->setCurrentGroup($group);
-		$this->getForm()->ancestorGroups[] = $group;
-		$group->setOption('insertAfter', $insertAfter);
-		$group->setOption('blockName', $blockName?->getName());
+		$this->setCurrentGroup($section);
+		$this->getForm()->ancestorGroups[] = $section;
+		$section->setOption('insertAfter', $insertAfter);
+		$section->setOption('blockName', $blockName?->getName());
 		$factory && $factory();
-		$this->lastSection = $group;
+		$this->lastSection = $section;
 		array_pop($this->getForm()->ancestorGroups);
 		$this->setCurrentGroup($this->getForm()->ancestorGroups ? end($this->getForm()->ancestorGroups) : null);
 
@@ -57,28 +57,28 @@ trait SectionTrait
 			$redrawHandler = $this->addSubmit('_redraw' . ucfirst($name));
 			$redrawHandler->setValidationScope($validationScope);
 			$redrawHandler->setOption('redrawHandler', true);
-			$redrawHandler->onClick[] = function () use ($onRedraw, $group) {
+			$redrawHandler->onClick[] = function () use ($onRedraw, $section) {
 				$onRedraw && $onRedraw();
-				$group->setOption('isControlInvalid', true);
-				foreach (array_merge([$group], $group->getAncestorGroups()) as $_group) {
-					$this->getForm()->getParent()->redrawControl($_group->getName());
+				$section->setOption('isControlInvalid', true);
+				foreach (array_merge([$section], $section->getAncestorSections()) as $_section) {
+					$this->getForm()->getParent()->redrawControl($_section->getHtmlId());
 				}
 			};
 
-			$group->setOption('redrawHandler', $redrawHandler);
+			$section->setOption('redrawHandler', $redrawHandler);
 			foreach ($watchForRedraw as $_control) {
 				$_control->setHtmlAttribute('data-adt-redraw-snippet', $redrawHandler->getHtmlName());
 			}
 		}
 
-		return $group;
+		return $section;
 	}
 
 	/**
-	 * @return ControlGroup[]
+	 * @return Section[]
 	 */
 	public function getSections(): array
 	{
-		return $this->allGroups;
+		return $this->allSections;
 	}
 }

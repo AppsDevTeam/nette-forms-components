@@ -6,7 +6,7 @@ use Nette\Forms\Container;
 
 trait ElementsTrait
 {	
-	protected array $groups = [];
+	protected array $sections = [];
 	protected ?array $elements = null;
 
 	public function getElements(): array
@@ -27,23 +27,23 @@ trait ElementsTrait
 			}
 
 			if ($component instanceof Container) {
-				$group = $component->getCurrentGroup();
+				$section = $component->getCurrentGroup();
 			} else {
-				$group = $component->getOption('group');
+				$section = $component->getOption('section');
 			}
 
-			if ($group === null || $group === $this) {
+			if ($section === null || $section === $this) {
 				$result[] = $component;
 			}
 		}
 
-		foreach ($this->groups as $group) {
-			if (!$group->getOption('insertAfter')) {
-				array_unshift($result, $group);
+		foreach ($this->sections as $_section) {
+			if (!$_section->getOption('insertAfter')) {
+				array_unshift($result, $_section);
 			} else {
 				foreach ($result as $key => $el) {
-					if ($el === $group->getOption('insertAfter')) {
-						array_splice($result, $key + 1, 0, [$group]);
+					if ($el === $_section->getOption('insertAfter')) {
+						array_splice($result, $key + 1, 0, [$_section]);
 						break;
 					}
 				}

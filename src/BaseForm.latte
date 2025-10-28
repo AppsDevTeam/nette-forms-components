@@ -9,7 +9,8 @@
 {/define}
 
 {define renderEl}
-	{if $el instanceof ADT\Forms\ControlGroup}
+	{if $el instanceof ADT\Forms\Section}
+		{varType ADT\Forms\Section $el}
 		<div {if $el->getName()}id="{$el->getHtmlId()}"{/if}>
 			{if $el->getOption('redrawHandler')}
 				{if !$control->isControlInvalid() || $control->isControlInvalid($el->getOption('htmlId')) || $el->isControlInvalid()}
@@ -24,11 +25,13 @@
 			{/if}
 		</div>
 	{else}
+		{varType Nette\ComponentModel\Component $el}
 		{var $blockName = 'component-' . $el->lookupPath(Nette\Forms\Form::class)}
 		{ifset #$blockName}
 			{include #$blockName, component => $el}
 		{else}
-			{if $el instanceof Nette\Forms\Container}
+			{if $el instanceof ADT\Forms\StaticContainer}
+				{varType ADT\Forms\StaticContainer $el}
 				{foreach $el->getElements() as $_el}
 					{include renderEl, el => $_el}
 				{/foreach}
@@ -40,6 +43,7 @@
 {/define}
 
 {define renderSection}
+	{varType ADT\Forms\Section $section}
 	{var $blockName = 'section-' . $section->getName()}
 	{ifset #$blockName}
 		{include #$blockName, section => $section}
