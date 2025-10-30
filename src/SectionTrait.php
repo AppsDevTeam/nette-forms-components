@@ -4,6 +4,7 @@ namespace ADT\Forms;
 
 use Exception;
 use Nette\Forms\Container;
+use Nette\Forms\Controls\SubmitButton;
 use Nette\InvalidArgumentException;
 
 trait SectionTrait
@@ -12,6 +13,8 @@ trait SectionTrait
 	/** @var Section[] */
 	protected array $allSections = [];
 	private const string NameRegexp = '#^[a-zA-Z0-9_]+$#D';
+	/** @var SubmitButton[]  */
+	protected array $redrawHandlers = [];
 
 	/**
 	 * @throws Exception
@@ -54,20 +57,30 @@ trait SectionTrait
 		$this->setCurrentGroup($this->getForm()->ancestorGroups ? end($this->getForm()->ancestorGroups) : null);
 
 		if ($watchForRedraw) {
-			$redrawHandler = $this->addSubmit('_redraw' . ucfirst($name));
-			$redrawHandler->setValidationScope($validationScope);
-			$redrawHandler->setOption('redrawHandler', true);
-			$redrawHandler->onClick[] = function () use ($onRedraw, $section) {
-				$onRedraw && $onRedraw();
-				$section->setOption('isControlInvalid', true);
-				foreach (array_merge([$section], $section->getAncestorSections()) as $_section) {
-					$this->getForm()->getParent()->redrawControl($_section->getHtmlId());
-				}
-			};
-
-			$section->setOption('redrawHandler', $redrawHandler);
 			foreach ($watchForRedraw as $_control) {
-				$_control->setHtmlAttribute('data-adt-redraw-snippet', $redrawHandler->getHtmlName());
+				$_controlName = $_control->name;
+
+				if (!isset($this->redrawHandlers[$_controlName])) {
+					$this->redrawHandlers[$_controlName] = $this->addSubmit('_redraw' . ucfirst($_controlName));
+				}
+				if ($validationScope !== null) {
+					if ($this->redrawHandlers[$_controlName]->getValidationScope() !== null) {
+						$this->redrawHandlers[$_controlName]->setValidationScope(array_merge($this->redrawHandlers[$_controlName]->getValidationScope(), $validationScope));
+					} else {
+						$this->redrawHandlers[$_controlName]->setValidationScope($validationScope);
+					}
+				}
+				$this->redrawHandlers[$_controlName]->setOption('redrawHandler', true);
+				$this->redrawHandlers[$_controlName]->onClick[] = function () use ($onRedraw, $section) {
+					$onRedraw && $onRedraw();
+					foreach (array_merge([$section], $section->getAncestorSections()) as $_section) {
+						$_section->setOption('isControlInvalid', true);
+						$this->getForm()->getParent()->redrawControl($_section->getHtmlId());
+					}
+				};
+				$section->setOption('redrawHandler', $this->redrawHandlers[$_controlName]);
+
+				$_control->setHtmlAttribute('data-adt-redraw-snippet', $this->redrawHandlers[$_controlName]->getHtmlName());
 			}
 		}
 

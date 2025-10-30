@@ -13,7 +13,7 @@
 		{varType ADT\Forms\Section $el}
 		<div {if $el->getName()}id="{$el->getHtmlId()}"{/if}>
 			{if $el->getOption('redrawHandler')}
-				{if !$control->isControlInvalid() || $control->isControlInvalid($el->getOption('htmlId')) || $el->isControlInvalid()}
+				{if !$control->isControlInvalid() || $el->isControlInvalid()}
 					<div n:snippet="$el->getHtmlId()">
 						{include renderSection, section => $el}
 					</div>
