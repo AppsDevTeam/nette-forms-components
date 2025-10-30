@@ -12,13 +12,15 @@
 	{if $el instanceof ADT\Forms\Section}
 		{varType ADT\Forms\Section $el}
 		<div {if $el->getName()}id="{$el->getHtmlId()}"{/if}>
-			{if $el->getOption('redrawHandler')}
+			{if $el->getOption('redrawHandlers')}
 				{if !$control->isControlInvalid() || $el->isControlInvalid()}
 					<div n:snippet="$el->getHtmlId()">
 						{include renderSection, section => $el}
 					</div>
 
-					{include renderControl control => $el->getOption('redrawHandler')}
+					{foreach $el->getOption('redrawHandlers') as $_el}
+						{include renderControl control => $_el}
+					{/foreach}
 				{/if}
 			{else}
 				{include renderSection, section => $el}
@@ -58,10 +60,12 @@
 {/define}
 
 {define renderControl}
-	{if $control instanceof \Nette\Forms\Controls\SubmitButton && !$control->getCaption() || $control instanceof Nette\Forms\Controls\HiddenField}
-		{input $control hidden => true}
-	{else}
-		{formPair $control}
+	{if !$control->getOption('rendered')}
+		{if $control instanceof \Nette\Forms\Controls\SubmitButton && !$control->getCaption() || $control instanceof Nette\Forms\Controls\HiddenField}
+			{input $control hidden => true}
+		{else}
+			{formPair $control}
+		{/if}
 	{/if}
 {/define}
 

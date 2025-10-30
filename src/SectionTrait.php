@@ -57,6 +57,7 @@ trait SectionTrait
 		$this->setCurrentGroup($this->getForm()->ancestorGroups ? end($this->getForm()->ancestorGroups) : null);
 
 		if ($watchForRedraw) {
+			$redrawHandlers = [];
 			foreach ($watchForRedraw as $_control) {
 				$_controlName = $_control->name;
 
@@ -78,10 +79,13 @@ trait SectionTrait
 						$this->getForm()->getParent()->redrawControl($_section->getHtmlId());
 					}
 				};
-				$section->setOption('redrawHandler', $this->redrawHandlers[$_controlName]);
 
 				$_control->setHtmlAttribute('data-adt-redraw-snippet', $this->redrawHandlers[$_controlName]->getHtmlName());
+
+				$redrawHandlers[] = $this->redrawHandlers[$_controlName];
 			}
+			
+			$section->setOption('redrawHandlers', $redrawHandlers);
 		}
 
 		return $section;
