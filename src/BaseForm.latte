@@ -13,15 +13,19 @@
 		{varType ADT\Forms\Section $el}
 		<div {if $el->getName()}id="{$el->getHtmlId()}"{/if}>
 			{if $el->getOption('redrawHandlers')}
-				{if !$control->isControlInvalid() || $el->isControlInvalid()}
+				{if $control->isControlInvalid($el->getHtmlId())}
 					<div n:snippet="$el->getHtmlId()">
 						{include renderSection, section => $el}
 					</div>
-
-					{foreach $el->getOption('redrawHandlers') as $_el}
-						{include renderControl control => $_el}
-					{/foreach}
+				{else}
+					<div id="{$control->getSnippetId($el->getHtmlId())}">
+						{include renderSection, section => $el}
+					</div>
 				{/if}
+
+				{foreach $el->getOption('redrawHandlers') as $_el}
+					{include renderControl control => $_el}
+				{/foreach}
 			{else}
 				{include renderSection, section => $el}
 			{/if}
@@ -71,11 +75,13 @@
 
 {define renderForm}
 	{form form}
-		{include errors}
+		<div n:snippet="$control->getName()">
+			{include errors}
 
-		{foreach $form->getElements() as $_el}
-			{include renderEl el => $_el}
-		{/foreach}
+			{foreach $form->getElements() as $_el}
+				{include renderEl el => $_el}
+			{/foreach}
+		</div>
 	{/form}
 {/define}
 

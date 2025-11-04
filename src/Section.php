@@ -5,9 +5,10 @@ namespace ADT\Forms;
 use Exception;
 use Nette\Forms\Container;
 use Nette\Forms\Control;
+use Nette\Forms\ControlGroup;
 use Nette\InvalidArgumentException;
 
-class Section extends \Nette\Forms\ControlGroup
+class Section extends ControlGroup
 {
 	use ElementsTrait;
 
@@ -15,6 +16,8 @@ class Section extends \Nette\Forms\ControlGroup
 	/** @var Section[] */
 	protected array $ancestorSections;
 	protected Container $parent;
+	protected array $watchForRedraw = [];
+	protected array $validationScope = [];
 
 	public function __construct(Container $parent, array $ancestorSections, ?string $name)
 	{
@@ -83,18 +86,30 @@ class Section extends \Nette\Forms\ControlGroup
 		return $this->getControls();
 	}
 	
-	public function isControlInvalid(): bool
-	{
-		foreach (array_merge([$this], $this->ancestorSections) as $_section) {
-			if ($_section->getOption('isControlInvalid')) {
-				return true;
-			}
-		}
-		return false;
-	}
-	
 	public function getAncestorSections(): array
 	{
 		return $this->ancestorSections;
+	}
+	
+	public function getWatchForRedraw(): ?array
+	{
+		return $this->watchForRedraw;
+	}
+	
+	public function setWatchForRedraw(array $watchForRedraw): static
+	{
+		$this->watchForRedraw = $watchForRedraw;
+		return $this;
+	}
+
+	public function getValidationScope(): array
+	{
+		return $this->validationScope;
+	}
+
+	public function setValidationScope(array $validationScope): static
+	{
+		$this->validationScope = $validationScope;
+		return $this;
 	}
 }

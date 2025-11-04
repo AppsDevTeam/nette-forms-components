@@ -270,7 +270,6 @@ abstract class BaseForm extends Control
 						if (!$_control instanceof BaseControl) {
 							continue;
 						}
-
 						$_control->setOption('hidden', true);
 						if ($emptyValue) {
 							if (method_exists($_control, 'setNullable')) {

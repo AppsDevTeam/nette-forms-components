@@ -51,32 +51,31 @@ trait SectionTrait
 		$this->getForm()->ancestorGroups[] = $section;
 		$section->setOption('insertAfter', $insertAfter);
 		$section->setOption('blockName', $blockName?->getName());
-		$factory && $factory();
+		$section->setWatchForRedraw($watchForRedraw);
+		$section->setValidationScope($validationScope);
+		$factory && $factory($section);
 		$this->lastSection = $section;
 		array_pop($this->getForm()->ancestorGroups);
 		$this->setCurrentGroup($this->getForm()->ancestorGroups ? end($this->getForm()->ancestorGroups) : null);
 
-		if ($watchForRedraw) {
+		if ($section->getWatchForRedraw()) {
 			$redrawHandlers = [];
-			foreach ($watchForRedraw as $_control) {
+			foreach ($section->getWatchForRedraw() as $_control) {
 				$_controlName = $_control->name;
 
 				if (!isset($this->redrawHandlers[$_controlName])) {
 					$this->redrawHandlers[$_controlName] = $this->addSubmit('_redraw' . ucfirst($_controlName));
 				}
-				if ($validationScope !== null) {
-					if ($this->redrawHandlers[$_controlName]->getValidationScope() !== null) {
-						$this->redrawHandlers[$_controlName]->setValidationScope(array_merge($this->redrawHandlers[$_controlName]->getValidationScope(), $validationScope));
-					} else {
-						$this->redrawHandlers[$_controlName]->setValidationScope($validationScope);
-					}
+				if ($this->redrawHandlers[$_controlName]->getValidationScope() !== null) {
+					$this->redrawHandlers[$_controlName]->setValidationScope(array_merge($this->redrawHandlers[$_controlName]->getValidationScope(), $section->getValidationScope()));
+				} else {
+					$this->redrawHandlers[$_controlName]->setValidationScope($section->getValidationScope());
 				}
 				$this->redrawHandlers[$_controlName]->setOption('redrawHandler', true);
 				$this->redrawHandlers[$_controlName]->onClick[] = function () use ($onRedraw, $section) {
 					$onRedraw && $onRedraw();
-					foreach (array_merge([$section], $section->getAncestorSections()) as $_section) {
-						$_section->setOption('isControlInvalid', true);
-						$this->getForm()->getParent()->redrawControl($_section->getHtmlId());
+					if (!$this->getForm()->getParent()->isControlInvalid()) {
+						$this->getForm()->getParent()->redrawControl($section->getHtmlId());
 					}
 				};
 
