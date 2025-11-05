@@ -6,6 +6,7 @@ use Exception;
 use Nette\Forms\Container;
 use Nette\Forms\Control;
 use Nette\Forms\ControlGroup;
+use Nette\Forms\SubmitterControl;
 use Nette\InvalidArgumentException;
 
 class Section extends ControlGroup
@@ -16,7 +17,7 @@ class Section extends ControlGroup
 	/** @var Section[] */
 	protected array $ancestorSections;
 	protected Container $parent;
-	protected array $watchForRedraw = [];
+	protected array|SubmitterControl $watchForRedraw;
 	protected array $validationScope = [];
 
 	public function __construct(Container $parent, array $ancestorSections, ?string $name)
@@ -91,12 +92,12 @@ class Section extends ControlGroup
 		return $this->ancestorSections;
 	}
 	
-	public function getWatchForRedraw(): ?array
+	public function getWatchForRedraw(): array|SubmitterControl
 	{
 		return $this->watchForRedraw;
 	}
 	
-	public function setWatchForRedraw(array $watchForRedraw): static
+	public function setWatchForRedraw(array|SubmitterControl $watchForRedraw): static
 	{
 		$this->watchForRedraw = $watchForRedraw;
 		return $this;
