@@ -81,9 +81,7 @@ trait SectionTrait
 					$this->redrawHandlers[$_controlName]->setOption('redrawHandler', true);
 					$this->redrawHandlers[$_controlName]->onClick[] = function () use ($onRedraw, $section) {
 						$onRedraw && $onRedraw();
-						if (!$this->getForm()->getParent()->isControlInvalid()) {
-							$this->getForm()->getParent()->redrawControl($section->getHtmlId());
-						}
+						$this->getForm()->getParent()->redrawControl($section->getHtmlId());
 					};
 
 					$_control->setHtmlAttribute('data-adt-redraw-snippet', $this->redrawHandlers[$_controlName]->getHtmlName());
