@@ -74,15 +74,15 @@
 {/define}
 
 {define renderForm}
-	{form form}
-		<div n:snippet="$control->getName()">
+	<div n:snippet="$control->getName()">
+		{form form}
 			{include errors}
 
 			{foreach $form->getElements() as $_el}
 				{include renderEl el => $_el}
 			{/foreach}
-		</div>
-	{/form}
+		{/form}
+	</div>
 {/define}
 
 {snippetArea formArea}
