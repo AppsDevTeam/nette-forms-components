@@ -287,7 +287,7 @@ class BootstrapFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 			$type = $control->getOption('type');
 			if ($control instanceof Nette\Forms\Controls\Button) {
 				$control->renderAsButton();
-				
+
 				if ($control->getValidationScope() !== null) {
 					$control->getControlPrototype()->addClass('btn btn-outline-secondary');
 				} else {
@@ -296,7 +296,16 @@ class BootstrapFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 				}
 
 			} elseif (in_array($type, ['checkbox', 'radio'], true)) {
-				if ($control instanceof Nette\Forms\Controls\Checkbox) {
+
+				if ($control->getOption('switch') === true) {
+					$control->getContainerPrototype()
+						->setName('div')
+						->addClass('form-check form-switch');
+
+					$control->getControlPrototype()
+						->addClass('form-check-input');
+				}
+				elseif ($control instanceof Nette\Forms\Controls\Checkbox) {
 					$control->getLabelPrototype()->addClass('form-check-label');
 				} else {
 					$control->getItemLabelPrototype()->addClass('form-check-label');
