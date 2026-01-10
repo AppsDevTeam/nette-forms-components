@@ -2,15 +2,15 @@
 
 namespace ADT\Forms;
 
+use Exception;
 use Nette;
 use Nette\Application\UI;
 use Nette\Application\UI\Presenter;
-use Nette\Forms\Form;
 use Traversable;
 
 class DynamicContainer extends BaseContainer
 {
-	const NEW_PREFIX = '_new_';
+	const string NEW_PREFIX = '_new_';
 	
 	private StaticContainerFactory $staticContainerFactory;
 	private bool $allowAdding = true;
@@ -63,23 +63,26 @@ class DynamicContainer extends BaseContainer
 	 * @param string $name
 	 * @return Nette\ComponentModel\IComponent|null
 	 */
-	protected function createComponent($name): ?Nette\ComponentModel\IComponent
+	protected function createComponent(string $name): ?Nette\ComponentModel\IComponent
 	{
 		return $this[$name] = $this->staticContainerFactory->create();
 	}
 
 
-	public function setStaticContainerFactory($staticContainerFactory)
+	public function setStaticContainerFactory($staticContainerFactory): static
 	{
 		$this->staticContainerFactory = $staticContainerFactory;
 		return $this;
 	}
 
 
+	/**
+	 * @throws Exception
+	 */
 	public function getTemplate(): StaticContainer
 	{
 		if (!$this->isAllowAdding()) {
-			throw new \Exception('Adding is not allowed.');
+			throw new Exception('Adding is not allowed.');
 		}
 
 		if (!$this->template) {
@@ -94,12 +97,15 @@ class DynamicContainer extends BaseContainer
 		return $this[static::NEW_PREFIX . $this->newCount++];
 	}
 
-	/**
-	 * Fill-in with values.
-	 * @param  array|object  $data
-	 * @return static
-	 * @internal
-	 */
+	public function setDefaults(object|array $data, bool $erase = false): static
+	{
+		$form = $this->getForm(throw: false);
+		if (!$form || !$form->isAnchored() || !$form->isSubmitted()) {
+			return parent::setDefaults($data, $erase);
+		}
+		return $this;
+	}
+
 	public function setValues(object|array $values, bool $erase = false, bool $onlyDisabled = false): static
 	{
 		foreach ($values as $name => $value) {
@@ -127,7 +133,7 @@ class DynamicContainer extends BaseContainer
 
 	private function getHttpData(): ?array
 	{
-		$path = explode(self::NAME_SEPARATOR, $this->lookupPath('Nette\Application\UI\Form'));
+		$path = explode(self::NameSeparator, $this->lookupPath('Nette\Application\UI\Form'));
 		$allData = $this->getForm()->getHttpData();
 		return Nette\Utils\Arrays::get($allData, $path, NULL);
 	}
@@ -136,7 +142,7 @@ class DynamicContainer extends BaseContainer
 	/**
 	 * @return StaticContainer[]
 	 */
-	public function getContainers()
+	public function getContainers(): array
 	{
 		return array_filter(
 			array_filter($this->getComponents(), fn($item) => $item instanceof StaticContainer),
