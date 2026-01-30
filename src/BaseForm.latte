@@ -38,9 +38,14 @@
 		{else}
 			{if $el instanceof ADT\Forms\StaticContainer}
 				{varType ADT\Forms\StaticContainer $el}
-				{foreach $el->getElements() as $_el}
-					{include renderEl, el => $_el}
-				{/foreach}
+				{var $blockName = 'component-items-row'}
+				{ifset #$blockName}
+					{include #$blockName, component => $el}
+				{else}
+					{foreach $el->getElements() as $_el}
+						{include renderEl, el => $_el}
+					{/foreach}
+				{/ifset}
 			{else}
 				{include renderControl, control => $el}
 			{/if}
