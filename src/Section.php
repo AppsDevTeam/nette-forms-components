@@ -84,7 +84,11 @@ class Section extends ControlGroup
 
 	public function getComponents(): array
 	{
-		return $this->getControls();
+		$components = [];
+		foreach ($this->getControls() as $control) {
+			$components[$control->getName()] = $control;
+		}
+		return $components;
 	}
 	
 	public function getAncestorSections(): array
