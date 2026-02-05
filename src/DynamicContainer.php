@@ -65,6 +65,9 @@ class DynamicContainer extends BaseContainer
 	 */
 	protected function createComponent(string $name): ?Nette\ComponentModel\IComponent
 	{
+		if (str_contains($name, static::NEW_PREFIX)) {
+			$this->newCount++;
+		}
 		return $this[$name] = $this->staticContainerFactory->create();
 	}
 
