@@ -68,7 +68,7 @@ trait SectionTrait
 				$redrawHandlers[] = $this->redrawHandlers[$_controlName];
 			} else {
 				foreach ($section->getWatchForRedraw() as $_control) {
-					$_controlName = $_control->name;
+					$_controlName = $_control->getName();
 
 					if (!isset($this->redrawHandlers[$_controlName])) {
 						$this->redrawHandlers[$_controlName] = $this->addSubmit('_redraw' . ucfirst($_controlName));
