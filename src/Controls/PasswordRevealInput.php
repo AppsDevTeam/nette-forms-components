@@ -25,6 +25,7 @@ class PasswordRevealInput extends TextInput
 	public function getControl(): Html
 	{
 		$input = parent::getControl();
+		$input->value = $this->getRenderedValue();
 
 		$button = Html::el('button')
 			->setAttribute('type', 'button')
