@@ -14,8 +14,6 @@ class PasswordRevealInput extends TextInput
 	public const string INPUT_CLASS = 'toggle-password-input';
 	public const string TOGGLE_CLASS = 'toggle-password-reveal';
 
-	private static bool $scriptRendered = false;
-
 	public function __construct($label = null, ?int $maxLength = null)
 	{
 		parent::__construct($label, $maxLength);
@@ -37,12 +35,8 @@ class PasswordRevealInput extends TextInput
 		$group = Html::el('div')
 			->setAttribute('class', 'input-group')
 			->addHtml($input)
-			->addHtml($button);
-
-		if (!self::$scriptRendered) {
-			self::$scriptRendered = true;
-			$group->addHtml(self::getScript());
-		}
+			->addHtml($button)
+			->addHtml(self::getScript());
 
 		return $group;
 	}
