@@ -26,7 +26,7 @@ final class FormMacros extends MacroSet
 		
 		$me->addMacro('formPair', fn(MacroNode $node, PhpWriter $writer) => $writer->write(
 			'$formOrContainer = end($this->global->formsStack);'
-			. '$formRenderer = $formOrContainer->getForm()->renderer;'
+			. '$formRenderer = $formOrContainer->getForm()->getRenderer();'
 			. '$__formPair = is_object(%node.word) ? %node.word : $formOrContainer[%node.word];'
 			. '$attrs = %node.array;'
 			. '$originalWrapper = $formRenderer->wrappers["pair"]["container"];'

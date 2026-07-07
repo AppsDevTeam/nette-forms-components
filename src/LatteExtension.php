@@ -25,7 +25,7 @@ final class LatteExtension extends Latte\Extension
 		return new Latte\Compiler\Nodes\AuxiliaryNode(
 			fn(Latte\Compiler\PrintContext $context) => $context->format(
 				'$formOrContainer = end($this->global->formsStack);'
-				. '$formRenderer = $formOrContainer->getForm()->renderer;'
+				. '$formRenderer = $formOrContainer->getForm()->getRenderer();'
 				. '$__subject = %node;'
 				. '$__formPair = is_object($__subject) ? $__subject : $formOrContainer[$__subject];'
 				. '$attrs = %node;'
