@@ -275,10 +275,9 @@ class BootstrapFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 
 		// we need to create a template container for DynamicContainer
 		// to apply bootstrap4 styles below
-		/** @var DynamicContainer $_dynamicContainer */
-		foreach ($container->getComponents(true, DynamicContainer::class) as $_dynamicContainer) {
-			if ($_dynamicContainer->isAllowAdding()) {
-				$_dynamicContainer->getTemplate();
+		foreach ($container->getComponentTree() as $_component) {
+			if ($_component instanceof DynamicContainer && $_component->isAllowAdding()) {
+				$_component->getTemplate();
 			}
 		}
 
