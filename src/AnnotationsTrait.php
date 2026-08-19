@@ -6,6 +6,7 @@ use ADT\Components\AjaxSelect\AjaxMultiSelect;
 use ADT\Components\AjaxSelect\AjaxSelect;
 use ADT\Components\AjaxSelect\DynamicSelect;
 use ADT\Forms\Controls\CurrencyInput;
+use ADT\Forms\Controls\PasswordRevealInput;
 use ADT\Forms\Controls\PhoneNumberInput;
 use ADT\Forms\DynamicContainer;
 use ADT\Forms\StaticContainer;
@@ -20,6 +21,7 @@ use \Closure;
  * @method PhoneNumberInput addPhoneNumber($name, $label, $invalidPhoneNumberMessage)
  * @method EmailStrictInput addEmailStrict($name, $label = null, $errorMessage = 'Invalid email address.')
  * @method CurrencyInput addCurrency($name, $label = null, $currency = null, $language = null)
+ * @method PasswordRevealInput addPasswordReveal(string $name, bool $renderValue, $label = null)
  * @method StaticContainer addStaticContainer(string $name, Closure $factory, ?string $isFilledComponentName = null, ?string $isRequiredMessage = null)
  * @method DynamicContainer addDynamicContainer(string $name, Closure $factory, ?string $isFilledComponentName = null, ?string $isRequiredMessage = null)
  * @method AjaxSelect addAjaxSelect($name, $label = null, $entityName = null, $entitySetupCallback = null, $config = [])
