@@ -205,6 +205,10 @@ class BootstrapFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 							// because of https://github.com/twbs/bootstrap/issues/25110
 							if ($el.parentNode.classList.contains('input-group')) {
 								$el.parentNode.classList.add('has-validation');
+								// u controlu, ktery si .input-group kresli sam (napr. PasswordRevealInput),
+								// je .invalid-feedback sourozencem skupiny, ne inputu - bootstrap ji
+								// zobrazuje pres '.is-invalid ~ .invalid-feedback', takze musi byt i na skupine
+								$el.parentNode.classList.add('is-invalid');
 							}
                         }
                     </script>

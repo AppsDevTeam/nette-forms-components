@@ -14,7 +14,14 @@ class PasswordRevealInput extends TextInput
 	public const string INPUT_CLASS = 'toggle-password-input';
 	public const string TOGGLE_CLASS = 'toggle-password-reveal';
 
-	public function __construct($label = null, ?int $maxLength = null)
+	/**
+	 * @param bool $renderValue Vykreslit hodnotu prvku do atributu value, aby ji šlo
+	 *     odkrýt tlačítkem. Zapni u zobrazení už uloženého tajemství (identifikátor,
+	 *     API klíč, PIN), vypni tam, kde se heslo jen zadává: hodnota jde v HTML na
+	 *     klienta, takže u pole navázaného na entitní sloupec s heslem by odešel jeho
+	 *     hash. Parametr je povinný schválně, aby to nešlo přejít mlčky.
+	 */
+	public function __construct(private readonly bool $renderValue, $label = null, ?int $maxLength = null)
 	{
 		parent::__construct($label, $maxLength);
 
@@ -25,7 +32,10 @@ class PasswordRevealInput extends TextInput
 	public function getControl(): Html
 	{
 		$input = parent::getControl();
-		$input->value = $this->getRenderedValue();
+
+		if ($this->renderValue) {
+			$input->value = $this->getRenderedValue();
+		}
 
 		$button = Html::el('button')
 			->setAttribute('type', 'button')
@@ -42,9 +52,12 @@ class PasswordRevealInput extends TextInput
 		return $group;
 	}
 
-	public static function addPasswordReveal(Container $container, string $name, $label = null): self
+	/**
+	 * @param bool $renderValue viz {@see self::__construct()}
+	 */
+	public static function addPasswordReveal(Container $container, string $name, bool $renderValue, $label = null): self
 	{
-		$component = new self($label);
+		$component = new self($renderValue, $label);
 		$container->addComponent($component, $name);
 		return $component;
 	}
