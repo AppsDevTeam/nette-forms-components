@@ -31,3 +31,13 @@ You can use `->setOption('prepend', 'Text to prepend')` or `->setOption('append'
 Can be used on their own, without using `ADT\Forms\Form`.
 
 Can be registered in your Bootstrap file like `BaseContainer::register();`. This will allow you to use `addStaticContainer` and `addDynamicContainer` methods in your forms.
+
+## ADT\Forms\Controls\PasswordRevealInput
+
+Password input with an eye button to reveal the value. Register it with `PasswordRevealInput::register();` to get the `addPasswordReveal($name, $renderValue, $label)` method.
+
+The behaviour is driven by an inline `<script>` rendered next to the input. Since it is built in PHP outside of Latte, `n:nonce` cannot reach it, so the control reads the nonce from the already sent `Content-Security-Policy` (or `Content-Security-Policy-Report-Only`) header itself and puts it on the element. Without a presenter or without CSP the attribute is simply omitted.
+
+## Tests
+
+`composer install && composer tester`

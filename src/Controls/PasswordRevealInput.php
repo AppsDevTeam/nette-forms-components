@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace ADT\Forms\Controls;
 
+use Nette\Application\UI\Presenter;
 use Nette\Forms\Container;
 use Nette\Forms\Form;
 use Nette\Forms\Controls\TextInput;
+use Nette\Http\IResponse;
 use Nette\Utils\Html;
 
 class PasswordRevealInput extends TextInput
@@ -47,7 +49,7 @@ class PasswordRevealInput extends TextInput
 			->setAttribute('class', 'input-group')
 			->addHtml($input)
 			->addHtml($button)
-			->addHtml(self::getScript());
+			->addHtml(self::getScript($this->findNonce()));
 
 		return $group;
 	}
@@ -68,7 +70,7 @@ class PasswordRevealInput extends TextInput
 		Container::extensionMethod('addPasswordReveal', [self::class, 'addPasswordReveal']);
 	}
 
-	private static function getScript(): Html
+	private static function getScript(?string $nonce): Html
 	{
 		$js = <<<JS
 		(function () {
@@ -121,6 +123,32 @@ class PasswordRevealInput extends TextInput
 			'{TOGGLE_CLASS}' => self::TOGGLE_CLASS,
 		]);
 
-		return Html::el('script')->setHtml($js);
+		$script = Html::el('script')->setHtml($js);
+
+		if ($nonce !== null) {
+			$script->setAttribute('nonce', $nonce);
+		}
+
+		return $script;
+	}
+
+	private function findNonce(): ?string
+	{
+		$httpResponse = $this->getHttpResponse();
+		if (!$httpResponse) {
+			return null;
+		}
+
+		$header = $httpResponse->getHeader('Content-Security-Policy')
+			?: $httpResponse->getHeader('Content-Security-Policy-Report-Only');
+
+		return preg_match('#\s\'nonce-([\w+/]+=*)\'#', (string) $header, $m) ? $m[1] : null;
+	}
+
+	private function getHttpResponse(): ?IResponse
+	{
+		$presenter = $this->lookup(Presenter::class, throw: false);
+
+		return $presenter instanceof Presenter ? $presenter->getHttpResponse() : null;
 	}
 }
