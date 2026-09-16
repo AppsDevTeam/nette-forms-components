@@ -8,9 +8,15 @@
 		"nette/forms": "^3.2.3",
 		"nette/utils": "^3.0 | ^4.0"
 	},
+	"require-dev": {
+		"nette/tester": "^2.5"
+	},
 	"autoload": {
 		"psr-4": {
 			"ADT\\Forms\\": "src/"
 		}
+	},
+	"scripts": {
+		"tester": "tester tests -C"
 	}
 }
