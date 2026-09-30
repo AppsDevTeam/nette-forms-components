@@ -190,9 +190,10 @@ class BootstrapFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 			// we want to render container for errors even if there are no errors
 			// to be able to redraw it on ajax call
 			$container
-				->setAttribute('id', $errorElId);
+				->setAttribute('id', $errorElId)
+				->setAttribute('data-adt-errors-for', $elId);
 
-			if ($errors) {
+			if ($errors && $this->isInlineScriptAllowed()) {
 				$el = 'document.getElementById("' . $elId . '")';
 				$container->addHtml("
 					<script>
@@ -219,6 +220,35 @@ class BootstrapFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 		return $control
 			? "\n\t" . $container->render()
 			: "\n" . $container->render(0);
+	}
+
+	private function isInlineScriptAllowed(): bool
+	{
+		$presenter = $this->form->lookup(Nette\Application\UI\Presenter::class, throw: false);
+		if (!$presenter instanceof Nette\Application\UI\Presenter) {
+			return true;
+		}
+
+		$directives = [];
+		foreach (explode(';', (string) $presenter->getHttpResponse()->getHeader('Content-Security-Policy')) as $directive) {
+			$parts = preg_split('#\s+#', strtolower(trim($directive)));
+			if ($parts[0] !== '') {
+				$directives[$parts[0]] ??= array_slice($parts, 1);
+			}
+		}
+
+		$sources = $directives['script-src-elem'] ?? $directives['script-src'] ?? $directives['default-src'] ?? null;
+		if ($sources === null) {
+			return true;
+		}
+
+		foreach ($sources as $source) {
+			if (str_starts_with($source, "'nonce-") || str_starts_with($source, "'sha") || $source === "'strict-dynamic'") {
+				return false;
+			}
+		}
+
+		return in_array("'unsafe-inline'", $sources, true);
 	}
 
 	public static function makeBootstrap(Nette\Forms\Container $container)
