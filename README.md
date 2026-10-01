@@ -20,6 +20,8 @@ Can be switch to Bootstrap 4 calling `ADT\Forms\BoostrapFormRenderer::$version =
 
 If it's an AJAX request and the form is not valid, only snippets with error messages will be sent back to browser (without rendering the form).
 
+Every error container carries `data-adt-errors-for` with the HTML id of its control (or form). Next to control errors an inline `<script>` is rendered that adds `is-invalid` to the control (and to its parent for radio/checkbox lists and input groups). When the `Content-Security-Policy` of the response would block it anyway (`script-src-elem`, `script-src` or `default-src` without `'unsafe-inline'`, or with a nonce, hash or `'strict-dynamic'`), the script is omitted. A nonce does not help here, because error snippets arrive over AJAX with a nonce of a different request. The classes are then set by the `SubmitForm` component of `adt-js-components` from `data-adt-errors-for`.
+
 If you need, you can use static methods `ADT\Forms\BoostrapFormRenderer::makeBootstrap` and `ADT\Forms\BoostrapFormRenderer::sendErrorPayload` manually (for example in `\Ublaboo\DataGrid\DataGrid::setItemsDetailForm`, where the container is created dynamically).
 
 You can use `->setOption('description', 'Description text')` to use field description.
