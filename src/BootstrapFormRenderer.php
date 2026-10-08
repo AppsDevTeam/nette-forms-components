@@ -82,7 +82,7 @@ class BootstrapFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 			}
 		}
 		if ($prepend) {
-			$prepend = '<span class="input-group-text">' . $prepend . '</span>';
+			$prepend = $this->renderInputGroupAddon($prepend);
 		}
 
 		$append = $control->getOption('append') ?: '';
@@ -94,7 +94,7 @@ class BootstrapFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 			}
 		}
 		if ($append) {
-			$append = '<span class="input-group-text">' . $append . '</span>';
+			$append = $this->renderInputGroupAddon($append);
 		}
 
 		$inputGroupStart = $inputGroupEnd = '';
@@ -151,6 +151,18 @@ class BootstrapFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 		}
 
 		return $el;
+	}
+
+	/**
+	 * @param string|Nette\HtmlStringable $addon
+	 */
+	protected function renderInputGroupAddon($addon): string
+	{
+		if ($addon instanceof Html && in_array($addon->getName(), ['a', 'button'], true)) {
+			return (string) $addon;
+		}
+
+		return '<span class="input-group-text">' . $addon . '</span>';
 	}
 
 	/**
