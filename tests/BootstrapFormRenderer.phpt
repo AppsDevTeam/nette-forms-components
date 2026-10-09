@@ -13,6 +13,7 @@ use Nette\Application\UI\Form;
 use Nette\Application\UI\Presenter;
 use Nette\Http\Request;
 use Nette\Http\UrlScript;
+use Nette\Utils\Html;
 use Tester\Assert;
 use Tester\TestCase;
 
@@ -210,6 +211,70 @@ final class BootstrapFormRendererTest extends TestCase
 		Assert::match('~<input[^>]+name="password"[^>]+class="[^"]*\bis-invalid\b[^"]*"~', $html);
 		Assert::contains('data-adt-errors-for="frm-form-password"', $html);
 		Assert::notContains('<script', $html);
+	}
+
+	public function testAppendButtonIsRenderedDirectlyInInputGroup(): void
+	{
+		// Tlacitko patri do input-group primo, v input-group-text by nemelo spravny vzhled.
+		[$form, $renderer] = $this->createForm();
+		$form['password']->setOption('append', Html::el('button')->setAttribute('type', 'button')->setAttribute('class', 'btn')->setText('+'));
+
+		$html = (string) $renderer->renderControl($form['password']);
+
+		Assert::match('~^<div class="input-group"><input[^>]+name="password"[^>]*><button type="button" class="btn">\+</button>~', $html);
+		Assert::notContains('input-group-text', $html);
+	}
+
+	public function testAppendLinkIsRenderedDirectlyInInputGroup(): void
+	{
+		[$form, $renderer] = $this->createForm();
+		$form['password']->setOption('append', Html::el('a')->setAttribute('href', '/new')->setAttribute('class', 'btn ajax')->setText('+'));
+
+		$html = (string) $renderer->renderControl($form['password']);
+
+		Assert::contains('<a href="/new" class="btn ajax">+</a>', $html);
+		Assert::notContains('input-group-text', $html);
+	}
+
+	public function testPrependButtonIsRenderedDirectlyInInputGroup(): void
+	{
+		[$form, $renderer] = $this->createForm();
+		$form['password']->setOption('prepend', Html::el('button')->setAttribute('type', 'button')->setText('-'));
+
+		$html = (string) $renderer->renderControl($form['password']);
+
+		Assert::match('~^<div class="input-group"><button type="button">-</button><input[^>]+name="password"~', $html);
+		Assert::notContains('input-group-text', $html);
+	}
+
+	public function testAppendTextIsWrappedInInputGroupText(): void
+	{
+		[$form, $renderer] = $this->createForm();
+		$form['password']->setOption('append', 'Kc');
+
+		$html = (string) $renderer->renderControl($form['password']);
+
+		Assert::contains('<span class="input-group-text">Kc</span>', $html);
+	}
+
+	public function testAppendHtmlOtherThanButtonIsWrappedInInputGroupText(): void
+	{
+		// Ikona nebo jiny element zustava v input-group-text jako drive.
+		[$form, $renderer] = $this->createForm();
+		$form['password']->setOption('append', Html::el('i')->setAttribute('class', 'fa fa-user'));
+
+		$html = (string) $renderer->renderControl($form['password']);
+
+		Assert::contains('<span class="input-group-text"><i class="fa fa-user"></i></span>', $html);
+	}
+
+	public function testControlWithoutAddonHasNoInputGroup(): void
+	{
+		[$form, $renderer] = $this->createForm();
+
+		$html = (string) $renderer->renderControl($form['password']);
+
+		Assert::notContains('input-group', $html);
 	}
 
 	/** @return array{Form, BootstrapFormRenderer} */
