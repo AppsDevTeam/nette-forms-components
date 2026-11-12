@@ -143,6 +143,14 @@ class BootstrapFormRenderer extends Nette\Forms\Rendering\DefaultFormRenderer
 				$el->addHtml($this->doRenderErrors($control->getErrors(), true, $control->getHtmlId()));
 			}
 		}
+		elseif ($control instanceof PhoneNumberInput && static::$version === self::VERSION_5) {
+			// predvolba jen tak siroka, jak potrebuje; chyby musi byt sourozencem skupiny, viz doRenderErrors()
+			$el = Html::el()
+				->addHtml(Html::el('div', ['class' => 'input-group'])
+					->addHtml($control->getControlPart(PhoneNumberInput::CONTROL_COUNTRY_CODE)->setAttribute('class', 'form-select flex-grow-0 w-auto'))
+					->addHtml($control->getControlPart(PhoneNumberInput::CONTROL_NATIONAL_NUMBER)->setAttribute('class', 'form-control')))
+				->addHtml($description . $this->renderErrors($control));
+		}
 		elseif ($control instanceof PhoneNumberInput) {
 			$el = Html::el('div')
 				->setAttribute('class', static::$version === self::VERSION_4 ? 'form-row' : 'row g-2')
