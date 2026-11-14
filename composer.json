@@ -14,7 +14,8 @@
 	"autoload": {
 		"psr-4": {
 			"ADT\\Forms\\": "src/"
-		}
+		},
+		"files": ["src/register.php"]
 	},
 	"scripts": {
 		"tester": "tester tests -C"
