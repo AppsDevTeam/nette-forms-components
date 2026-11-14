@@ -43,3 +43,16 @@ The behaviour is driven by an inline `<script>` rendered next to the input. Sinc
 ## Tests
 
 `composer install && composer tester`
+
+## Czech validation messages
+
+The default validation messages of Nette Forms go through the translator of the form. The package
+ships them in Czech (`src/lang/messages.cs.neon`, the English message is the key) for
+contributte/translation:
+
+```neon
+extensions:
+	netteFormsComponents: ADT\Forms\DI\NetteFormsComponentsExtension
+```
+
+Forms in other locales keep the messages of Nette (or of their own catalog).

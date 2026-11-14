@@ -66,7 +66,7 @@ abstract class BaseForm extends Control
 			if ($type === Form::class || is_subclass_of($type, Form::class)) {
 				return $this->form;
 			} elseif ($type === Presenter::class || is_subclass_of($type, Presenter::class)) {
-				return $this->presenter;
+				return $this->getPresenter();
 			} elseif ($values) {
 				if ($type === ArrayHash::class) {
 					return $values;

@@ -9,7 +9,12 @@
 		"nette/utils": "^3.0 | ^4.0"
 	},
 	"require-dev": {
-		"nette/tester": "^2.5"
+		"nette/tester": "^2.5",
+		"nette/neon": "^3.4 | ^4.0",
+		"contributte/translation": "^2.0"
+	},
+	"suggest": {
+		"contributte/translation": "Czech validation messages of Nette Forms (NetteFormsComponentsExtension)"
 	},
 	"autoload": {
 		"psr-4": {

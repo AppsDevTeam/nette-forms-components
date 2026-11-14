@@ -1,0 +1,25 @@
+# Default validation messages of Nette Forms in Czech. Nette passes them to the translator of the
+# form (Validator::formatMessage), so the English text is the key (domain messages); the placeholders
+# %d / %s are filled by Nette afterwards. Registered by NetteFormsComponentsExtension.
+Your session has expired. Please return to the home page and try again.: Vypršela platnost přihlášení. Vraťte se na úvodní stránku a zkuste to znovu.
+Please enter %s.: Zadejte %s.
+This value should not be %s.: Tato hodnota nesmí být %s.
+This field is required.: Vyplňte prosím toto pole.
+This field should be blank.: Toto pole musí zůstat prázdné.
+Please enter at least %d characters.: Zadejte alespoň %d znaků.
+Please enter no more than %d characters.: Zadejte nejvýše %d znaků.
+Please enter a value between %d and %d characters long.: Zadejte hodnotu dlouhou %d až %d znaků.
+Please enter a valid email address.: Zadejte platnou e-mailovou adresu.
+Please enter a valid URL.: Zadejte platnou URL adresu.
+Please enter a valid integer.: Zadejte celé číslo.
+Please enter a non-negative integer.: Zadejte nezáporné celé číslo.
+Please enter a valid number.: Zadejte číslo.
+Please enter a value greater than or equal to %d.: Zadejte hodnotu nejméně %d.
+Please enter a value less than or equal to %d.: Zadejte hodnotu nejvýše %d.
+Please enter a value between %d and %d.: Zadejte hodnotu v rozmezí %d až %d.
+The size of the uploaded file can be up to %d bytes.: Nahraný soubor může mít nejvýše %d bajtů.
+The uploaded data exceeds the limit of %d bytes.: Nahraná data přesahují povolený limit %d bajtů.
+The uploaded file is not in the expected format.: Nahrajte soubor v očekávaném formátu.
+'The uploaded file must be image in format JPEG, GIF, PNG or WebP.': 'Nahrajte obrázek ve formátu JPEG, GIF, PNG nebo WebP.'
+Please select a valid option.: Vyberte platnou možnost.
+An error occurred during file upload.: Při nahrávání souboru došlo k chybě.
