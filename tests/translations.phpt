@@ -3,8 +3,10 @@
 declare(strict_types=1);
 
 // Every key of the catalog is a current default message of Nette Forms (otherwise a Nette update
-// that rewords a message would silently bring the English text back) and keeps its placeholders.
+// that rewords a message would silently bring the English text back) or a text of a control of this
+// package, and keeps its placeholders.
 
+use ADT\Forms\Controls\PasswordRevealInput;
 use ADT\Forms\DI\NetteFormsComponentsExtension;
 use Contributte\Translation\DI\TranslationProviderInterface;
 use Nette\Forms\Validator;
@@ -19,6 +21,8 @@ Assert::type(TranslationProviderInterface::class, $extension);
 
 $catalog = Neon::decode((string) file_get_contents($dir . '/messages.cs.neon'));
 $messages = array_values(array_unique(Validator::$messages)); // select boxes share one message
+$messages[] = PasswordRevealInput::LABEL_SHOW;
+$messages[] = PasswordRevealInput::LABEL_HIDE;
 $keys = array_keys($catalog);
 sort($messages);
 sort($keys);
