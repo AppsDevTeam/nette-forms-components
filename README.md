@@ -38,6 +38,8 @@ The `addStaticContainer` and `addDynamicContainer` methods are registered automa
 
 Password input with an eye button to reveal the value. The `addPasswordReveal($name, $renderValue, $label)` method is registered automatically (see Containers).
 
+The eye button is reachable by Tab and has an `aria-label` (`PasswordRevealInput::LABEL_SHOW` / `LABEL_HIDE`, „Show password“ / „Hide password“) translated by the translator of the form - Czech in the catalog of the package (see Czech validation messages); the script switches it when the value is revealed.
+
 The behaviour is driven by an inline `<script>` rendered next to the input. Since it is built in PHP outside of Latte, `n:nonce` cannot reach it, so the control reads the nonce from the already sent `Content-Security-Policy` (or `Content-Security-Policy-Report-Only`) header itself and puts it on the element. Without a presenter or without CSP the attribute is simply omitted.
 
 ## Tests
@@ -55,4 +57,4 @@ extensions:
 	netteFormsComponents: ADT\Forms\DI\NetteFormsComponentsExtension
 ```
 
-Forms in other locales keep the messages of Nette (or of their own catalog).
+Forms in other locales keep the messages of Nette (or of their own catalog). The catalog also holds the texts of the controls of this package (the labels of `PasswordRevealInput`).

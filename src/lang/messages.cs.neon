@@ -1,6 +1,7 @@
 # Default validation messages of Nette Forms in Czech. Nette passes them to the translator of the
 # form (Validator::formatMessage), so the English text is the key (domain messages); the placeholders
 # %d / %s are filled by Nette afterwards. Registered by NetteFormsComponentsExtension.
+# The last block are texts of the controls of this package (PasswordRevealInput::LABEL_*).
 Your session has expired. Please return to the home page and try again.: Vypršela platnost přihlášení. Vraťte se na úvodní stránku a zkuste to znovu.
 Please enter %s.: Zadejte %s.
 This value should not be %s.: Tato hodnota nesmí být %s.
@@ -23,3 +24,7 @@ The uploaded file is not in the expected format.: Nahrajte soubor v očekávané
 'The uploaded file must be image in format JPEG, GIF, PNG or WebP.': 'Nahrajte obrázek ve formátu JPEG, GIF, PNG nebo WebP.'
 Please select a valid option.: Vyberte platnou možnost.
 An error occurred during file upload.: Při nahrávání souboru došlo k chybě.
+
+# PasswordRevealInput - aria-label of the eye button
+Show password: Zobrazit heslo
+Hide password: Skrýt heslo

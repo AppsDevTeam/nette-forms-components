@@ -16,6 +16,10 @@ class PasswordRevealInput extends TextInput
 	public const string INPUT_CLASS = 'toggle-password-input';
 	public const string TOGGLE_CLASS = 'toggle-password-reveal';
 
+	/** Popisky tlačítka pro čtečky (aria-label), jdou přes translator formuláře; česky v lang/messages.cs.neon */
+	public const string LABEL_SHOW = 'Show password';
+	public const string LABEL_HIDE = 'Hide password';
+
 	/**
 	 * @param bool $renderValue Vykreslit hodnotu prvku do atributu value, aby ji šlo
 	 *     odkrýt tlačítkem. Zapni u zobrazení už uloženého tajemství (identifikátor,
@@ -39,9 +43,14 @@ class PasswordRevealInput extends TextInput
 			$input->value = $this->getRenderedValue();
 		}
 
+		// Tlačítko je v pořadí Tab a má popisek, jinak ho z klávesnice nejde použít a čtečka
+		// ohlásí jen „tlačítko“; skript popisek při odkrytí přepne na LABEL_HIDE
+		$labelShow = (string) $this->translate(self::LABEL_SHOW);
 		$button = Html::el('button')
 			->setAttribute('type', 'button')
-			->setAttribute('tabindex', '-1')
+			->setAttribute('aria-label', $labelShow)
+			->setAttribute('data-label-show', $labelShow)
+			->setAttribute('data-label-hide', (string) $this->translate(self::LABEL_HIDE))
 			->appendAttribute('class', 'btn btn-outline-secondary ' . self::TOGGLE_CLASS)
 			->addHtml(Html::el('i')->setAttribute('class', 'fas fa-eye'));
 
@@ -106,6 +115,10 @@ class PasswordRevealInput extends TextInput
 				}
 				var masked = input.type === 'password';
 				input.type = masked ? 'text' : 'password';
+				var label = button.getAttribute(masked ? 'data-label-hide' : 'data-label-show');
+				if (label) {
+					button.setAttribute('aria-label', label);
+				}
 				var icon = button.querySelector('i');
 				if (icon) {
 					icon.classList.toggle('fa-eye', !masked);
