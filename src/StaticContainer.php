@@ -5,6 +5,7 @@ namespace ADT\Forms;
 use Closure;
 use Nette\Application\UI\Presenter;
 use Nette\Forms\Controls\BaseControl;
+use Nette\Forms\Controls\Button;
 use Nette\Http\FileUpload;
 
 class StaticContainer extends BaseContainer
@@ -69,8 +70,20 @@ class StaticContainer extends BaseContainer
 				$_value = null;
 			}
 		}
+		if (array_filter($values)) {
+			return false;
+		}
 
-		return !array_filter($values);
+		// A disabled control is omitted from the values, but the user could not have emptied it:
+		// a container whose only filled controls are disabled (locked read-only fields) is not
+		// empty - otherwise the entity mapper would delete the related entity on every save.
+		foreach ($this->getControls() as $_control) {
+			if ($_control instanceof BaseControl && !$_control instanceof Button && $_control->isDisabled() && $_control->getValue()) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 
