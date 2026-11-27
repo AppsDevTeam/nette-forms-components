@@ -8,6 +8,7 @@ use Nette\Forms\Container;
 abstract class BaseContainer extends Container
 {
 	use AnnotationsTrait;
+	use NumericInputsTrait;
 
 	// because there is no "addError" method in Container class
 	// we have to create an IControl instance and call "addError" on it

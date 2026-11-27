@@ -12,6 +12,8 @@ Overrides `addError` method (the parent method does not use the translator lazy)
 
 Have `@method` annotations for all ADT Nette Forms components so PhpStorm auto completion should work out of the box.
 
+`addInteger` and `addFloat` (on the form and on the containers of this package) render a text input (`ADT\Forms\Controls\NumericInput`) instead of `<input type="number">`: the browser changes a number input by the mouse wheel while it has focus, so scrolling the page silently rewrote the value. The numeric keyboard of touch devices (`inputmode` `numeric` / `decimal`) is used only when a Min / Range rule keeps the value non-negative - iOS has no numeric keyboard with a minus key, so a field that allows negative numbers keeps the standard keyboard. The validation of Nette stays the same (Integer / Float rule on the client and on the server, `addFloat` accepts the decimal comma); a Min / Max / Range rule is validated by Nette only, a text input has no `min` / `max` attributes. A real number input is still available by `setHtmlType('number')`. Plain `Nette\Forms\Container` (`$form->addContainer()`) keeps the default of Nette.
+
 ## ADT\Forms\BoostrapFormRenderer
 
 Can be used on its own, without using `ADT\Forms\Form` (for example in `Ublaboo\DataGrid\DataGrid::createComponentFilter` method, which creates `Nette\Application\UI\Form` instance)
