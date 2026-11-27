@@ -13,6 +13,7 @@ class Form extends Nette\Application\UI\Form
 	use GetComponentTrait;
 	use SectionTrait;
 	use ElementsTrait;
+	use NumericInputsTrait;
 
 	const string GROUP_LEVEL_SEPARATOR = '-';
 
